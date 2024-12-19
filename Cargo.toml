@@ -1,0 +1,7 @@
+[workspace]
+members = ["poseidon31"]
+resolver = "2"
+
+[workspace.dependencies]
+poseidon2-m31 = { git = "https://github.com/Bitcoin-Wildlife-Sanctuary/poseidon2-m31.git" }
+serde_json = "1.0.133"
