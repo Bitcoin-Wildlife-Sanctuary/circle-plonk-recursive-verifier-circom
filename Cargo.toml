@@ -1,5 +1,5 @@
 [workspace]
-members = ["poseidon31", "circle"]
+members = ["poseidon31", "circle", "channel"]
 resolver = "2"
 
 [workspace.dependencies]

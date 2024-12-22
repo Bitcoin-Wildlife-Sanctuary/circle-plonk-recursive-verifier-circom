@@ -1,0 +1,12 @@
+[package]
+name = "circle-plonk-circom-channel"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+stwo-prover.workspace = true
+poseidon2-m31.workspace = true
+serde_json.workspace = true
+rand.workspace = true
+rand_chacha.workspace = true
+ark-std.workspace = true
