@@ -5,7 +5,6 @@ edition = "2021"
 
 [dependencies]
 stwo-prover.workspace = true
-poseidon2-m31.workspace = true
 serde_json.workspace = true
 rand.workspace = true
 rand_chacha.workspace = true

@@ -96,12 +96,8 @@ template poseidon31_full_round(r) {
     }
 
     component mds = poseidon31_apply_16x16_mds_matrix();
-    for(var i = 0; i < 16; i++) {
-        mds.in[i] <== before_mds[i];
-    }
-    for(var i = 0; i < 16; i++) {
-        out[i] <== mds.out[i];
-    }
+    mds.in <== before_mds;
+    out <== mds.out;
 }
 
 template poseidon31_partial_round(r) {
@@ -140,53 +136,33 @@ template poseidon31_permute() {
 
     component preprocessing = poseidon31_apply_16x16_mds_matrix();
 
-    for(var i = 0; i < 16; i++) {
-        preprocessing.in[i] <== in[i];
-    }
-    for(var i = 0; i < 16; i++) {
-        before_rounds[0][i] <== preprocessing.out[i];
-    }
+    preprocessing.in <== in;
+    before_rounds[0] <== preprocessing.out;
 
     component full_round[8];
     for(var r = 0; r < 4; r++) {
         full_round[r] = poseidon31_full_round(r);
 
-        for(var i = 0; i < 16; i++) {
-            full_round[r].in[i] <== before_rounds[r][i];
-        }
-        for(var i = 0; i < 16; i++) {
-            before_rounds[r + 1][i] <== full_round[r].out[i];
-        }
+        full_round[r].in <== before_rounds[r];
+        before_rounds[r + 1] <== full_round[r].out;
     }
 
     component partial_round[14];
     for(var r = 0; r < 14; r++) {
         partial_round[r] = poseidon31_partial_round(r);
 
-        for(var i = 0; i < 16; i++) {
-            partial_round[r].in[i] <== before_rounds[4 + r][i];
-        }
-        for(var i = 0; i < 16; i++) {
-            before_rounds[4 + r + 1][i] <== partial_round[r].out[i];
-        }
+        partial_round[r].in <== before_rounds[4 + r];
+        before_rounds[4 + r + 1] <== partial_round[r].out;
     }
 
     for(var r = 0; r < 3; r++) {
         full_round[4 + r] = poseidon31_full_round(4 + r);
 
-        for(var i = 0; i < 16; i++) {
-            full_round[4 + r].in[i] <== before_rounds[18 + r][i];
-        }
-        for(var i = 0; i < 16; i++) {
-            before_rounds[18 + r + 1][i] <== full_round[4 + r].out[i];
-        }
+        full_round[4 + r].in <== before_rounds[18 + r];
+        before_rounds[18 + r + 1] <== full_round[4 + r].out;
     }
 
     full_round[7] = poseidon31_full_round(7);
-    for(var i = 0; i < 16; i++) {
-        full_round[7].in[i] <== before_rounds[21][i];
-    }
-    for(var i = 0; i < 16; i++) {
-        out[i] <== full_round[7].out[i];
-    }
+    full_round[7].in <== before_rounds[21];
+    out <== full_round[7].out;
 }

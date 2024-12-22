@@ -1,5 +1,16 @@
 pragma circom 2.0.0;
 
+template m31_inv() {
+    signal input in;
+    signal output out;
+
+    signal inv;
+    inv <-- 1 / in;
+    inv * in === 1;
+
+    out <== inv;
+}
+
 template cm31_add() {
     signal input a[2];
     signal input b[2];
@@ -52,16 +63,11 @@ template cm31_inv() {
     signal t3;
     t3 <== t1 + t2;
 
-    signal inv;
-    inv <-- 1 / t3;
+    component inv = m31_inv();
+    inv.in <== t3;
 
-    signal test;
-    test <== inv * t3;
-
-    test === 1;
-
-    out[0] <== a[0] * inv;
-    out[1] <== -a[1] * inv;
+    out[0] <== a[0] * inv.out;
+    out[1] <== -a[1] * inv.out;
 }
 
 template cm31_shift_by_i() {

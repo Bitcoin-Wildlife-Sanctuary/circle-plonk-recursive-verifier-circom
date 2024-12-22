@@ -29,10 +29,7 @@ template poseidon31_channel_mix_root() {
         c1.in[i] <== root[i];
         c1.in[i + 8] <== old_channel[i + 8];
     }
-
-    for(var i = 0; i < 16; i++) {
-        new_channel[i] <== c1.out[i];
-    }
+    new_channel <== c1.out;
 }
 
 template poseidon31_channel_get_felts() {
@@ -55,9 +52,7 @@ template poseidon31_channel_squeeze_again()  {
         c1.in[i] <== 0;
         c1.in[i + 8] <== old_channel[i + 8];
     }
-    for(var i = 0; i < 16; i++) {
-        new_channel[i] <== c1.out[i];
-    }
+    new_channel <== c1.out;
 }
 
 template poseidon31_channel_absorb_one_felt_and_permute() {
@@ -73,9 +68,7 @@ template poseidon31_channel_absorb_one_felt_and_permute() {
     for(var i = 0; i < 8; i++) {
         c1.in[i + 8] <== old_channel[i + 8];
     }
-    for(var i = 0; i < 16; i++) {
-        new_channel[i] <== c1.out[i];
-    }
+    new_channel <== c1.out;
 }
 
 template poseidon31_channel_absorb_two_felts_and_permute() {
@@ -92,7 +85,5 @@ template poseidon31_channel_absorb_two_felts_and_permute() {
     for(var i = 0; i < 8; i++) {
         c1.in[i + 8] <== old_channel[i + 8];
     }
-    for(var i = 0; i < 16; i++) {
-        new_channel[i] <== c1.out[i];
-    }
+    new_channel <== c1.out;
 }

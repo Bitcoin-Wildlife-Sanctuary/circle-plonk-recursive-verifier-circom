@@ -8,19 +8,11 @@ template test_poseidon31_permute() {
     signal tmp[16];
 
     component s1 = poseidon31_permute();
-
-    for(var i = 0; i < 16; i++) {
-        s1.in[i] <== in[i];
-    }
+    s1.in <== in;
 
     component s2 = poseidon31_permute();
-    for(var i = 0; i < 16; i++) {
-        s2.in[i] <== s1.out[i];
-    }
-
-    for(var i = 0; i < 16; i++) {
-        s2.out[i] === out[i];
-    }
+    s2.in <== s1.out;
+    s2.out === out;
 }
 
 component main { public [in, out] } = test_poseidon31_permute();

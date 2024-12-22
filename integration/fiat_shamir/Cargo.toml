@@ -1,0 +1,10 @@
+[package]
+name = "circle-plonk-circom-fiat-shamir"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+circle-plonk-lib.workspace = true
+stwo-prover.workspace = true
+bincode.workspace = true
+serde_json.workspace = true

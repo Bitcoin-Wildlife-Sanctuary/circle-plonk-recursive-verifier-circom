@@ -46,7 +46,5 @@ template poseidon31_full_round_rc(r) {
         ]
     ];
 
-    for(var i = 0; i < 16; i++) {
-        out[i] <== round_rc[r][i];
-    }
+    out <== round_rc[r];
 }
