@@ -7,6 +7,7 @@ cmake . || exit
 make || exit
 ./test ../input.json ../output.wtns || exit
 cd .. || exit
+circle-plonk info --r1cs test.r1cs || exit
 circle-plonk preprocess --r1cs test.r1cs --out-vk vk.tmp || exit
 circle-plonk prove --r1cs test.r1cs --witness output.wtns --out-proof proof.tmp || exit
 circle-plonk verify --proof proof.tmp --map test.map --input input.json --vk vk.tmp || exit
