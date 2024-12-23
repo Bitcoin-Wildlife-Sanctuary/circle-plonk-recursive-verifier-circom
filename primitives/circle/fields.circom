@@ -229,3 +229,13 @@ template qm31_inv() {
     out[2] <== b_out.out[0];
     out[3] <== b_out.out[1];
 }
+
+template qm31_neg() {
+    signal input a[4];
+    signal output out[4];
+
+    out[0] <== -a[0];
+    out[1] <== -a[1];
+    out[2] <== -a[2];
+    out[3] <== -a[3];
+}
