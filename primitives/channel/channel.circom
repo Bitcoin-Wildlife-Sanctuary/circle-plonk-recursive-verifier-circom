@@ -1,6 +1,7 @@
 pragma circom 2.0.0;
 
 include "../poseidon31/poseidon31_permute.circom";
+include "../bits/bits.circom";
 
 template poseidon31_channel_default() {
     signal output out[16];

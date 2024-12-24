@@ -144,6 +144,178 @@ template fiat_shamir() {
     channel_squeeze_fri.old_channel <== channel_absorb12.new_channel;
     line_batch_random_coeff === channel_squeeze_fri.a;
     fri_fold_random_coeff === channel_squeeze_fri.b;
+
+    signal input fri_layer_commitment0[8];
+    signal input fri_alpha0[4];
+
+    component channel_fri_a0 = poseidon31_channel_mix_root();
+    channel_fri_a0.old_channel <== channel_absorb12.new_channel;
+    channel_fri_a0.root <== fri_layer_commitment0;
+
+    component channel_fri_s0 = poseidon31_channel_get_felts();
+    channel_fri_s0.old_channel <== channel_fri_a0.new_channel;
+    fri_alpha0 === channel_fri_s0.a;
+
+    signal input fri_layer_commitment1[8];
+    signal input fri_alpha1[4];
+
+    component channel_fri_a1 = poseidon31_channel_mix_root();
+    channel_fri_a1.old_channel <== channel_fri_a0.new_channel;
+    channel_fri_a1.root <== fri_layer_commitment1;
+
+    component channel_fri_s1 = poseidon31_channel_get_felts();
+    channel_fri_s1.old_channel <== channel_fri_a1.new_channel;
+    fri_alpha1 === channel_fri_s1.a;
+
+    signal input fri_layer_commitment2[8];
+    signal input fri_alpha2[4];
+
+    component channel_fri_a2 = poseidon31_channel_mix_root();
+    channel_fri_a2.old_channel <== channel_fri_a1.new_channel;
+    channel_fri_a2.root <== fri_layer_commitment2;
+
+    component channel_fri_s2 = poseidon31_channel_get_felts();
+    channel_fri_s2.old_channel <== channel_fri_a2.new_channel;
+    fri_alpha2 === channel_fri_s2.a;
+
+    signal input fri_layer_commitment3[8];
+    signal input fri_alpha3[4];
+
+    component channel_fri_a3 = poseidon31_channel_mix_root();
+    channel_fri_a3.old_channel <== channel_fri_a2.new_channel;
+    channel_fri_a3.root <== fri_layer_commitment3;
+
+    component channel_fri_s3 = poseidon31_channel_get_felts();
+    channel_fri_s3.old_channel <== channel_fri_a3.new_channel;
+    fri_alpha3 === channel_fri_s3.a;
+
+    signal input fri_layer_commitment4[8];
+    signal input fri_alpha4[4];
+
+    component channel_fri_a4 = poseidon31_channel_mix_root();
+    channel_fri_a4.old_channel <== channel_fri_a3.new_channel;
+    channel_fri_a4.root <== fri_layer_commitment4;
+
+    component channel_fri_s4 = poseidon31_channel_get_felts();
+    channel_fri_s4.old_channel <== channel_fri_a4.new_channel;
+    fri_alpha4 === channel_fri_s4.a;
+
+    signal input fri_layer_commitment5[8];
+    signal input fri_alpha5[4];
+
+    component channel_fri_a5 = poseidon31_channel_mix_root();
+    channel_fri_a5.old_channel <== channel_fri_a4.new_channel;
+    channel_fri_a5.root <== fri_layer_commitment5;
+
+    component channel_fri_s5 = poseidon31_channel_get_felts();
+    channel_fri_s5.old_channel <== channel_fri_a5.new_channel;
+    fri_alpha5 === channel_fri_s5.a;
+
+    signal input fri_layer_commitment6[8];
+    signal input fri_alpha6[4];
+
+    component channel_fri_a6 = poseidon31_channel_mix_root();
+    channel_fri_a6.old_channel <== channel_fri_a5.new_channel;
+    channel_fri_a6.root <== fri_layer_commitment6;
+
+    component channel_fri_s6 = poseidon31_channel_get_felts();
+    channel_fri_s6.old_channel <== channel_fri_a6.new_channel;
+    fri_alpha6 === channel_fri_s6.a;
+
+    signal input fri_layer_commitment7[8];
+    signal input fri_alpha7[4];
+
+    component channel_fri_a7 = poseidon31_channel_mix_root();
+    channel_fri_a7.old_channel <== channel_fri_a6.new_channel;
+    channel_fri_a7.root <== fri_layer_commitment7;
+
+    component channel_fri_s7 = poseidon31_channel_get_felts();
+    channel_fri_s7.old_channel <== channel_fri_a7.new_channel;
+    fri_alpha7 === channel_fri_s7.a;
+
+    signal input fri_layer_commitment8[8];
+    signal input fri_alpha8[4];
+
+    component channel_fri_a8 = poseidon31_channel_mix_root();
+    channel_fri_a8.old_channel <== channel_fri_a7.new_channel;
+    channel_fri_a8.root <== fri_layer_commitment8;
+
+    component channel_fri_s8 = poseidon31_channel_get_felts();
+    channel_fri_s8.old_channel <== channel_fri_a8.new_channel;
+    fri_alpha8 === channel_fri_s8.a;
+
+    signal input fri_layer_commitment9[8];
+    signal input fri_alpha9[4];
+
+    component channel_fri_a9 = poseidon31_channel_mix_root();
+    channel_fri_a9.old_channel <== channel_fri_a8.new_channel;
+    channel_fri_a9.root <== fri_layer_commitment9;
+
+    component channel_fri_s9 = poseidon31_channel_get_felts();
+    channel_fri_s9.old_channel <== channel_fri_a9.new_channel;
+    fri_alpha9 === channel_fri_s9.a;
+
+    signal input fri_layer_commitment10[8];
+    signal input fri_alpha10[4];
+
+    component channel_fri_a10 = poseidon31_channel_mix_root();
+    channel_fri_a10.old_channel <== channel_fri_a9.new_channel;
+    channel_fri_a10.root <== fri_layer_commitment10;
+
+    component channel_fri_s10 = poseidon31_channel_get_felts();
+    channel_fri_s10.old_channel <== channel_fri_a10.new_channel;
+    fri_alpha10 === channel_fri_s10.a;
+
+    signal input fri_layer_commitment11[8];
+    signal input fri_alpha11[4];
+
+    component channel_fri_a11 = poseidon31_channel_mix_root();
+    channel_fri_a11.old_channel <== channel_fri_a10.new_channel;
+    channel_fri_a11.root <== fri_layer_commitment11;
+
+    component channel_fri_s11 = poseidon31_channel_get_felts();
+    channel_fri_s11.old_channel <== channel_fri_a11.new_channel;
+    fri_alpha11 === channel_fri_s11.a;
+
+    signal input fri_layer_commitment12[8];
+    signal input fri_alpha12[4];
+
+    component channel_fri_a12 = poseidon31_channel_mix_root();
+    channel_fri_a12.old_channel <== channel_fri_a11.new_channel;
+    channel_fri_a12.root <== fri_layer_commitment12;
+
+    component channel_fri_s12 = poseidon31_channel_get_felts();
+    channel_fri_s12.old_channel <== channel_fri_a12.new_channel;
+    fri_alpha12 === channel_fri_s12.a;
+
+    signal input last_layer[4];
+    signal input channel_after_pow[16];
+
+    signal input nonce[3];
+    component channel_last_layer = poseidon31_channel_absorb_two_felts_and_permute();
+    channel_last_layer.old_channel <== channel_fri_a12.new_channel;
+    channel_last_layer.a <== last_layer;
+    channel_last_layer.b[0] <== nonce[0];
+    channel_last_layer.b[1] <== nonce[1];
+    channel_last_layer.b[2] <== nonce[2];
+    channel_last_layer.b[3] <== 0;
+
+    component check_nonce1 = check_num_bits(22);
+    check_nonce1.a <== nonce[0];
+
+    component check_nonce2 = check_num_bits(21);
+    check_nonce2.a <== nonce[1];
+
+    component check_nonce3 = check_num_bits(21);
+    check_nonce3.a <== nonce[2];
+
+    channel_after_pow === channel_last_layer.new_channel;
+
+    signal pow_check;
+    pow_check <== channel_last_layer.new_channel[8] / 1024;
+
+    component check_pow = check_num_bits(21);
+    check_pow.a <== pow_check;
 }
 
 component main { public [
@@ -160,6 +332,13 @@ component main { public [
         sampled_value_constant_b_wire, sampled_value_constant_c_wire,
         sampled_value_constant_op, sampled_value_composition_0, sampled_value_composition_1,
         sampled_value_composition_2, sampled_value_composition_3, line_batch_random_coeff,
-        fri_fold_random_coeff
+        fri_fold_random_coeff, fri_layer_commitment0, fri_layer_commitment1,
+        fri_layer_commitment2, fri_layer_commitment3, fri_layer_commitment4,
+        fri_layer_commitment5, fri_layer_commitment6, fri_layer_commitment7,
+        fri_layer_commitment8, fri_layer_commitment9, fri_layer_commitment10,
+        fri_layer_commitment11, fri_layer_commitment12, fri_alpha0, fri_alpha1, fri_alpha2,
+        fri_alpha3, fri_alpha4, fri_alpha5, fri_alpha6, fri_alpha7, fri_alpha8, fri_alpha9,
+        fri_alpha10, fri_alpha11, fri_alpha12, last_layer, channel_after_pow,
+        nonce
     ]
 } = fiat_shamir();

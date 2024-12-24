@@ -1,5 +1,8 @@
 [workspace]
-members = ["primitives/poseidon31", "primitives/circle", "primitives/channel", "integration/fiat_shamir"]
+members = [
+    "primitives/poseidon31", "primitives/circle", "primitives/channel", "primitives/bits",
+    "integration/fiat_shamir", "integration/hints"
+]
 resolver = "2"
 
 [workspace.dependencies]
@@ -13,6 +16,7 @@ stwo-prover = { git = "https://github.com/Bitcoin-Wildlife-Sanctuary/stwo", bran
 circle-plonk-lib = { git = "https://github.com/Bitcoin-Wildlife-Sanctuary/circle-plonk" }
 bincode = "1.3.3"
 num-traits = "0.2.19"
+circle-plonk-circom-hints = { path = "integration/hints" }
 
 [profile.release]
 opt-level = 3
