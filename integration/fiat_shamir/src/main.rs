@@ -76,7 +76,7 @@ fn main() {
         "fri_alpha12": qm31_to_num_vec(hints.fri_alphas[12]),
         "last_layer": qm31_to_num_vec(hints.last_layer),
         "nonce": hints.nonce,
-        "channel_after_pow": hints.channel_after_pow
+        "queries": hints.queries,
     });
 
     for (k, v) in text2.as_object().unwrap() {

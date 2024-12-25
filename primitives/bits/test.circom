@@ -15,6 +15,13 @@ template test_check_num_bits() {
 
     component a15_check = check_num_bits(15);
     a15_check.a <== a15;
+
+    signal input in_a;
+    signal input out_low;
+
+    component low_check = get_lower_bits_checked(18);
+    low_check.in <== in_a;
+    low_check.out === out_low;
 }
 
-component main { public [a22, a23, a15] } = test_check_num_bits();
+component main { public [a22, a23, a15, in_a, out_low] } = test_check_num_bits();

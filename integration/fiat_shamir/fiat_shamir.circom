@@ -1,5 +1,6 @@
 pragma circom 2.0.0;
 
+include "../../primitives/bits/bits.circom";
 include "../../primitives/circle/curve.circom";
 include "../../primitives/circle/fields.circom";
 include "../../primitives/channel/channel.circom";
@@ -289,7 +290,6 @@ template fiat_shamir() {
     fri_alpha12 === channel_fri_s12.a;
 
     signal input last_layer[4];
-    signal input channel_after_pow[16];
 
     signal input nonce[3];
     component channel_last_layer = poseidon31_channel_absorb_two_felts_and_permute();
@@ -309,13 +309,38 @@ template fiat_shamir() {
     component check_nonce3 = check_num_bits(21);
     check_nonce3.a <== nonce[2];
 
-    channel_after_pow === channel_last_layer.new_channel;
-
     signal pow_check;
-    pow_check <== channel_last_layer.new_channel[8] / 1024;
-
-    component check_pow = check_num_bits(21);
+    pow_check <-- channel_last_layer.new_channel[8] >> 20;
+    pow_check * 1048576 === channel_last_layer.new_channel[8];
+    component check_pow = check_num_bits(11);
     check_pow.a <== pow_check;
+
+    signal input queries[16];
+
+    signal raw_queries[16];
+    component channel_get_raw_queries_1 = poseidon31_channel_get_felts();
+    channel_get_raw_queries_1.old_channel <== channel_last_layer.new_channel;
+    for(var i = 0; i < 4; i++) {
+        raw_queries[i] <== channel_get_raw_queries_1.a[i];
+        raw_queries[i + 4] <== channel_get_raw_queries_1.b[i];
+    }
+
+    component channel_squeeze_again_for_queries = poseidon31_channel_squeeze_again();
+    channel_squeeze_again_for_queries.old_channel <== channel_last_layer.new_channel;
+
+    component channel_get_raw_queries_2 = poseidon31_channel_get_felts();
+    channel_get_raw_queries_2.old_channel <== channel_squeeze_again_for_queries.new_channel;
+    for(var i = 0; i < 4; i++) {
+        raw_queries[i + 8] <== channel_get_raw_queries_2.a[i];
+        raw_queries[i + 12] <== channel_get_raw_queries_2.b[i];
+    }
+
+    component get_lower_bits[16];
+    for(var i = 0; i < 16; i++) {
+        get_lower_bits[i] = get_lower_bits_checked(19);
+        get_lower_bits[i].in <== raw_queries[i];
+        queries[i] === get_lower_bits[i].out;
+    }
 }
 
 component main { public [
@@ -338,7 +363,7 @@ component main { public [
         fri_layer_commitment8, fri_layer_commitment9, fri_layer_commitment10,
         fri_layer_commitment11, fri_layer_commitment12, fri_alpha0, fri_alpha1, fri_alpha2,
         fri_alpha3, fri_alpha4, fri_alpha5, fri_alpha6, fri_alpha7, fri_alpha8, fri_alpha9,
-        fri_alpha10, fri_alpha11, fri_alpha12, last_layer, channel_after_pow,
-        nonce
+        fri_alpha10, fri_alpha11, fri_alpha12, last_layer,
+        nonce, queries
     ]
 } = fiat_shamir();

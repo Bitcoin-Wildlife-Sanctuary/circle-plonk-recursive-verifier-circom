@@ -17,6 +17,7 @@ circle-plonk-lib = { git = "https://github.com/Bitcoin-Wildlife-Sanctuary/circle
 bincode = "1.3.3"
 num-traits = "0.2.19"
 circle-plonk-circom-hints = { path = "integration/hints" }
+itertools = "0.13.0"
 
 [profile.release]
 opt-level = 3

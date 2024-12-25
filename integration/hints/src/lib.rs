@@ -1,4 +1,5 @@
 use circle_plonk_lib::stwo::PlonkVerifierParams;
+use itertools::Itertools;
 use num_traits::Zero;
 use serde::Deserialize;
 use serde_json::Value;
@@ -12,7 +13,7 @@ use stwo_prover::core::fields::m31::M31;
 use stwo_prover::core::fields::qm31::{SecureField, QM31};
 use stwo_prover::core::fields::secure_column::SECURE_EXTENSION_DEGREE;
 use stwo_prover::core::fields::FieldExpOps;
-use stwo_prover::core::fri::FriConfig;
+use stwo_prover::core::fri::{CirclePolyDegreeBound, FriConfig};
 use stwo_prover::core::pcs::{CommitmentSchemeVerifier, PcsConfig, TreeVec};
 use stwo_prover::core::prover::StarkProof;
 use stwo_prover::core::vcs::poseidon31_hash::Poseidon31Hash;
@@ -58,9 +59,9 @@ pub struct FiatShamirHint {
 
     pub last_layer: QM31,
     pub nonce: [u32; 3],
-    pub channel_after_pow: [u32; 16],
     pub fri_layer_commitments: Vec<Poseidon31Hash>,
     pub fri_alphas: Vec<QM31>,
+    pub queries: Vec<u32>,
 }
 
 impl FiatShamirHint {
@@ -112,8 +113,8 @@ impl FiatShamirHint {
         ]);
         let channel = &mut Poseidon31Channel::default();
         let config = PcsConfig {
-            pow_bits: 10,
-            fri_config: FriConfig::new(0, 4, 64),
+            pow_bits: 20,
+            fri_config: FriConfig::new(0, 5, 16),
         };
         let commitment_scheme =
             &mut CommitmentSchemeVerifier::<Poseidon31MerkleChannel>::new(config);
@@ -200,7 +201,40 @@ impl FiatShamirHint {
         let n2 = (nonce >> 22) & ((1 << 21) - 1); // 21 bytes
         let n3 = (nonce >> 43) & ((1 << 21) - 1); // 21 bytes
 
-        let channel_after_pow = channel.sponge.state;
+        let bounds = commitment_scheme
+            .column_log_sizes()
+            .zip_cols(&sampled_points)
+            .map_cols(|(log_size, sampled_points)| {
+                vec![
+                    CirclePolyDegreeBound::new(log_size - config.fri_config.log_blowup_factor);
+                    sampled_points.len()
+                ]
+            })
+            .flatten_cols()
+            .into_iter()
+            .sorted()
+            .rev()
+            .dedup()
+            .collect_vec();
+
+        let column_log_sizes = bounds
+            .iter()
+            .dedup()
+            .map(|b| b.log_degree_bound + config.fri_config.log_blowup_factor)
+            .collect_vec();
+
+        let mut queries = vec![];
+        let mut query_cnt = 0;
+        let max_query = (1 << column_log_sizes[0]) - 1;
+        while query_cnt < config.fri_config.n_queries {
+            let random_bytes = channel.draw_random_bytes();
+            for chunk in random_bytes.chunks_exact(4) {
+                let query_bits = u32::from_le_bytes(chunk.try_into().unwrap());
+                let quotient_query = query_bits & max_query;
+                queries.push(quotient_query);
+                query_cnt += 1;
+            }
+        }
 
         FiatShamirHint {
             trace_commitment: proof.commitments[0],
@@ -243,10 +277,10 @@ impl FiatShamirHint {
             line_batch_random_coeff,
             fri_fold_random_coeff,
             last_layer,
-            channel_after_pow,
             fri_layer_commitments,
             fri_alphas,
             nonce: [n1 as u32, n2 as u32, n3 as u32],
+            queries,
         }
     }
 }
