@@ -1,10 +1,10 @@
-use circle_plonk_circom_hints::FiatShamirHint;
+use circle_plonk_circom_hints::fiat_shamir::FiatShamirHints;
 use serde_json::json;
 use stwo_prover::core::fields::qm31::QM31;
 use stwo_prover::core::vcs::poseidon31_hash::Poseidon31Hash;
 
 fn main() {
-    let hints = FiatShamirHint::new();
+    let hints = FiatShamirHints::new();
 
     let hash_to_num_vec = |a: &Poseidon31Hash| a.as_limbs();
     let qm31_to_num_vec = |a: QM31| [a.0 .0 .0, a.0 .1 .0, a.1 .0 .0, a.1 .1 .0];
