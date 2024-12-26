@@ -5,6 +5,9 @@ use serde_json::json;
 use std::ops::{Add, Mul, Neg};
 use stwo_prover::core::fields::qm31::{SecureField, QM31};
 use stwo_prover::core::fields::{Field, FieldExpOps};
+use stwo_prover::core::poly::circle::CanonicCoset;
+use log::trace;
+use stwo_prover::core::circle::CirclePoint;
 
 fn main() {
     let mut prng = ChaCha20Rng::seed_from_u64(0);
@@ -31,6 +34,15 @@ fn main() {
         (x, y)
     };
 
+    let trace_step = CanonicCoset::new(15).step();
+    let shift_minus_1 = trace_step.mul_signed(-1);
+
+    let point = CirclePoint {
+        x,
+        y
+    };
+    let shifted_point = point.add(shift_minus_1.into_ef());
+
     let to_num_vec = |a: QM31| [a.0 .0 .0, a.0 .1 .0, a.1 .0 .0, a.1 .1 .0];
 
     let text = json!({
@@ -44,6 +56,8 @@ fn main() {
         "t": to_num_vec(t),
         "x": to_num_vec(x),
         "y": to_num_vec(y),
+        "shifted_x": to_num_vec(shifted_point.x),
+        "shifted_y": to_num_vec(shifted_point.y),
     });
 
     println!("{}", text.to_string());

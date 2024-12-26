@@ -179,6 +179,17 @@ template qm31_mul() {
     out[3] <== asbs[1] - a0b0[1] - a1b1[1];
 }
 
+template qm31_mul_m31() {
+    signal input a[4];
+    signal input b;
+
+    signal output out[4];
+
+    for(var i = 0; i < 4; i++) {
+        out[i] <== a[i] * b;
+    }
+}
+
 template qm31_inv() {
     signal input a[4];
     signal output out[4];

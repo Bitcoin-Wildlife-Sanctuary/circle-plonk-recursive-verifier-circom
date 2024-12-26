@@ -44,9 +44,23 @@ template test_fields() {
     compute_t.t <== t;
     compute_t.x === x;
     compute_t.y === y;
+
+    component shift_minus_1 = circle_point_minus_1(15);
+
+    component shifted_point_c = circle_point_add_m31();
+    shifted_point_c.x1 <== x;
+    shifted_point_c.y1 <== y;
+    shifted_point_c.x2 <== shift_minus_1.x;
+    shifted_point_c.y2 <== shift_minus_1.y;
+
+    signal input shifted_x[4];
+    signal input shifted_y[4];
+
+    shifted_x === shifted_point_c.out_x;
+    shifted_y === shifted_point_c.out_y;
 }
 
 component main { public [
     a, b, a_plus_b, a_minus_b, a_times_b, a_inv, a_square,
-    t, x, y
+    t, x, y, shifted_x, shifted_y
 ] } = test_fields();

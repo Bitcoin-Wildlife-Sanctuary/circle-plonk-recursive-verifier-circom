@@ -9,3 +9,4 @@ serde_json.workspace = true
 rand.workspace = true
 rand_chacha.workspace = true
 ark-std.workspace = true
+log = "0.4.22"
