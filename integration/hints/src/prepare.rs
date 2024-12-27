@@ -1,15 +1,26 @@
 use crate::FiatShamirHints;
-use num_traits::Zero;
+use num_traits::{One, Zero};
 use serde::Deserialize;
 use serde_json::Value;
 use std::io::Cursor;
+use std::ops::Add;
+use stwo_prover::core::circle::CirclePoint;
+use stwo_prover::core::fields::cm31::CM31;
 use stwo_prover::core::fields::m31::M31;
-use stwo_prover::core::fields::qm31::QM31;
+use stwo_prover::core::fields::qm31::{SecureField, QM31};
 use stwo_prover::core::fields::FieldExpOps;
+use stwo_prover::core::poly::circle::CanonicCoset;
 
 pub struct PrepareHints {
     pub claimed_sum: QM31,
     pub constraint_num: QM31,
+    pub constraint_denom: QM31,
+
+    pub oods_a: CM31,
+    pub oods_b: CM31,
+
+    pub oods_shifted_a: CM31,
+    pub oods_shifted_b: CM31,
 }
 
 impl PrepareHints {
@@ -22,7 +33,7 @@ impl PrepareHints {
         let op = h.sampled_value_constant_op;
 
         let a_val_times_b_val = a_val * b_val;
-        let mut res1 = op * (a_val + b_val - a_val_times_b_val) + a_val_times_b_val - c_val;
+        let mut res1 = c_val - (op * (a_val + b_val - a_val_times_b_val) + a_val_times_b_val);
 
         let composition_fold_random_coeff = h.random_coeff;
         let composition_fold_random_coeff_squared =
@@ -137,9 +148,60 @@ impl PrepareHints {
 
         let constraint_num = res1 + res2 + res3;
 
+        let constraint_denom = {
+            let mut cur_x = fiat_shamir_hints.oods_point_x;
+
+            for _ in 1..13 {
+                cur_x = cur_x * cur_x;
+                cur_x = cur_x + cur_x;
+                cur_x = cur_x - QM31::one();
+            }
+
+            cur_x.inverse()
+        };
+
+        let computed_composition = constraint_num * constraint_denom;
+
+        let composition_0 = fiat_shamir_hints.sampled_value_composition_0;
+        let composition_1 = fiat_shamir_hints.sampled_value_composition_1;
+        let composition_2 = fiat_shamir_hints.sampled_value_composition_2;
+        let composition_3 = fiat_shamir_hints.sampled_value_composition_3;
+
+        let composition = composition_0
+            + composition_1 * QM31::from_u32_unchecked(0, 1, 0, 0)
+            + composition_2 * QM31::from_u32_unchecked(0, 0, 1, 0)
+            + composition_3 * QM31::from_u32_unchecked(0, 0, 0, 1);
+
+        assert_eq!(computed_composition, composition);
+
+        let oods_point = CirclePoint::<SecureField> {
+            x: fiat_shamir_hints.oods_point_x,
+            y: fiat_shamir_hints.oods_point_y,
+        };
+
+        let trace_step = CanonicCoset::new(13).step();
+        let shift_minus_1 = trace_step.mul_signed(-1);
+        let oods_shifted_point = oods_point.add(shift_minus_1.into_ef());
+
+        let prepare_ab = |x: SecureField, y: SecureField| {
+            let x_second_div_y_second = x.1 * y.1.inverse();
+            let cross_term = x_second_div_y_second * y.0 - x.0;
+
+            (x_second_div_y_second, cross_term)
+        };
+
+        let (oods_a, oods_b) = prepare_ab(oods_point.x, oods_point.y);
+        let (oods_shifted_a, oods_shifted_b) =
+            prepare_ab(oods_shifted_point.x, oods_shifted_point.y);
+
         PrepareHints {
             constraint_num,
             claimed_sum,
+            constraint_denom,
+            oods_a,
+            oods_b,
+            oods_shifted_a,
+            oods_shifted_b,
         }
     }
 }

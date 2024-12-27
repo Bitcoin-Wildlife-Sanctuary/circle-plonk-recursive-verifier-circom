@@ -1,6 +1,7 @@
 use circle_plonk_circom_hints::fiat_shamir::FiatShamirHints;
 use circle_plonk_circom_hints::PrepareHints;
 use serde_json::json;
+use stwo_prover::core::fields::cm31::CM31;
 use stwo_prover::core::fields::qm31::QM31;
 
 fn main() {
@@ -8,6 +9,7 @@ fn main() {
     let prepare_hints = PrepareHints::new(&fiat_shamir_hints);
 
     let qm31_to_num_vec = |a: QM31| [a.0 .0 .0, a.0 .1 .0, a.1 .0 .0, a.1 .1 .0];
+    let cm31_to_num_vec = |a: CM31| [a.0 .0, a.1 .0];
 
     let text = json!({
         "random_coeff": qm31_to_num_vec(fiat_shamir_hints.random_coeff),
@@ -35,6 +37,13 @@ fn main() {
         "c_logup_next_3": qm31_to_num_vec(fiat_shamir_hints.sampled_value_interaction_shifted_sum_3),
         "mult": qm31_to_num_vec(fiat_shamir_hints.sampled_value_constant_mult),
         "constraint_num": qm31_to_num_vec(prepare_hints.constraint_num),
+        "constraint_denom": qm31_to_num_vec(prepare_hints.constraint_denom),
+        "oods_point_x": qm31_to_num_vec(fiat_shamir_hints.oods_point_x),
+        "oods_point_y": qm31_to_num_vec(fiat_shamir_hints.oods_point_y),
+        "oods_a": cm31_to_num_vec(prepare_hints.oods_a),
+        "oods_b": cm31_to_num_vec(prepare_hints.oods_b),
+        "oods_shifted_a": cm31_to_num_vec(prepare_hints.oods_shifted_a),
+        "oods_shifted_b": cm31_to_num_vec(prepare_hints.oods_shifted_b),
         "claimed_sum": qm31_to_num_vec(prepare_hints.claimed_sum),
     });
 

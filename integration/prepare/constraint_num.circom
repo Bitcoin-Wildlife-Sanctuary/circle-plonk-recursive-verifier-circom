@@ -31,8 +31,8 @@ template compute_res1() {
     res1_1.b <== a_val_times_b_val.out;
 
     component res1_2 = qm31_sub();
-    res1_2.a <== res1_1.out;
-    res1_2.b <== c_val;
+    res1_2.a <== c_val;
+    res1_2.b <== res1_1.out;
 
     component random_coeff_squared = qm31_mul();
     random_coeff_squared.a <== random_coeff;
