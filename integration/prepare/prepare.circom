@@ -3,6 +3,7 @@ pragma circom 2.0.0;
 include "constraint_denom.circom";
 include "constraint_num.circom";
 include "pair_vanishing.circom";
+include "column_line_coeffs.circom";
 
 template test_prepare() {
     signal input a_val[4];
@@ -85,6 +86,105 @@ template test_prepare() {
     oods_b === pair_vanishing.oods_pair_vanishing_b;
     oods_shifted_a === pair_vanishing.oods_shifted_pair_vanishing_a;
     oods_shifted_b === pair_vanishing.oods_shifted_pair_vanishing_b;
+
+    component column_c = compute_column_line_coeffs();
+    column_c.oods_y <== oods_point_y;
+    column_c.oods_shifted_y <== pair_vanishing.oods_shifted_y;
+
+    signal input sampled_value_trace_a_val[4];
+    signal input sampled_value_trace_b_val[4];
+    signal input sampled_value_trace_c_val[4];
+    signal input sampled_value_interaction_ab_0[4];
+    signal input sampled_value_interaction_ab_1[4];
+    signal input sampled_value_interaction_ab_2[4];
+    signal input sampled_value_interaction_ab_3[4];
+    signal input sampled_value_interaction_sum_0[4];
+    signal input sampled_value_interaction_sum_1[4];
+    signal input sampled_value_interaction_sum_2[4];
+    signal input sampled_value_interaction_sum_3[4];
+    signal input sampled_value_interaction_shifted_sum_0[4];
+    signal input sampled_value_interaction_shifted_sum_1[4];
+    signal input sampled_value_interaction_shifted_sum_2[4];
+    signal input sampled_value_interaction_shifted_sum_3[4];
+    signal input sampled_value_constant_mult[4];
+    signal input sampled_value_constant_a_wire[4];
+    signal input sampled_value_constant_b_wire[4];
+    signal input sampled_value_constant_c_wire[4];
+    signal input sampled_value_constant_op[4];
+    signal input sampled_value_composition_0[4];
+    signal input sampled_value_composition_1[4];
+    signal input sampled_value_composition_2[4];
+    signal input sampled_value_composition_3[4];
+
+    column_c.trace_a_val <== sampled_value_trace_a_val;
+    column_c.trace_b_val <== sampled_value_trace_b_val;
+    column_c.trace_c_val <== sampled_value_trace_c_val;
+    column_c.interaction_ab_0 <== sampled_value_interaction_ab_0;
+    column_c.interaction_ab_1 <== sampled_value_interaction_ab_1;
+    column_c.interaction_ab_2 <== sampled_value_interaction_ab_2;
+    column_c.interaction_ab_3 <== sampled_value_interaction_ab_3;
+    column_c.interaction_sum_0 <== sampled_value_interaction_sum_0;
+    column_c.interaction_sum_1 <== sampled_value_interaction_sum_1;
+    column_c.interaction_sum_2 <== sampled_value_interaction_sum_2;
+    column_c.interaction_sum_3 <== sampled_value_interaction_sum_3;
+    column_c.interaction_shifted_sum_0 <== sampled_value_interaction_shifted_sum_0;
+    column_c.interaction_shifted_sum_1 <== sampled_value_interaction_shifted_sum_1;
+    column_c.interaction_shifted_sum_2 <== sampled_value_interaction_shifted_sum_2;
+    column_c.interaction_shifted_sum_3 <== sampled_value_interaction_shifted_sum_3;
+    column_c.constant_mult <== sampled_value_constant_mult;
+    column_c.constant_a_wire <== sampled_value_constant_a_wire;
+    column_c.constant_b_wire <== sampled_value_constant_b_wire;
+    column_c.constant_c_wire <== sampled_value_constant_c_wire;
+    column_c.constant_op <== sampled_value_constant_op;
+    column_c.composition_0 <== sampled_value_composition_0;
+    column_c.composition_1 <== sampled_value_composition_1;
+    column_c.composition_2 <== sampled_value_composition_2;
+    column_c.composition_3 <== sampled_value_composition_3;
+
+    signal input trace_column_line_coeffs_a[6];
+    signal input trace_column_line_coeffs_b[6];
+    for(var i = 0; i < 3; i++) {
+        column_c.trace_column_line_coeffs_a[i][0] === trace_column_line_coeffs_a[i * 2];
+        column_c.trace_column_line_coeffs_a[i][1] === trace_column_line_coeffs_a[i * 2 + 1];
+        column_c.trace_column_line_coeffs_b[i][0] === trace_column_line_coeffs_b[i * 2];
+        column_c.trace_column_line_coeffs_b[i][1] === trace_column_line_coeffs_b[i * 2 + 1];
+    }
+
+    signal input interaction_column_line_coeffs_a[16];
+    signal input interaction_column_line_coeffs_b[16];
+    for(var i = 0; i < 8; i++) {
+        column_c.interaction_column_line_coeffs_a[i][0] === interaction_column_line_coeffs_a[i * 2];
+        column_c.interaction_column_line_coeffs_a[i][1] === interaction_column_line_coeffs_a[i * 2 + 1];
+        column_c.interaction_column_line_coeffs_b[i][0] === interaction_column_line_coeffs_b[i * 2];
+        column_c.interaction_column_line_coeffs_b[i][1] === interaction_column_line_coeffs_b[i * 2 + 1];
+    }
+
+    signal input interaction_shifted_column_line_coeffs_a[8];
+    signal input interaction_shifted_column_line_coeffs_b[8];
+    for(var i = 0; i < 4; i++) {
+        column_c.interaction_shifted_column_line_coeffs_a[i][0] === interaction_shifted_column_line_coeffs_a[i * 2];
+        column_c.interaction_shifted_column_line_coeffs_a[i][1] === interaction_shifted_column_line_coeffs_a[i * 2 + 1];
+        column_c.interaction_shifted_column_line_coeffs_b[i][0] === interaction_shifted_column_line_coeffs_b[i * 2];
+        column_c.interaction_shifted_column_line_coeffs_b[i][1] === interaction_shifted_column_line_coeffs_b[i * 2 + 1];
+    }
+
+    signal input constant_column_line_coeffs_a[10];
+    signal input constant_column_line_coeffs_b[10];
+    for(var i = 0; i < 5; i++) {
+        column_c.constant_column_line_coeffs_a[i][0] === constant_column_line_coeffs_a[i * 2];
+        column_c.constant_column_line_coeffs_a[i][1] === constant_column_line_coeffs_a[i * 2 + 1];
+        column_c.constant_column_line_coeffs_b[i][0] === constant_column_line_coeffs_b[i * 2];
+        column_c.constant_column_line_coeffs_b[i][1] === constant_column_line_coeffs_b[i * 2 + 1];
+    }
+
+    signal input composition_column_line_coeffs_a[8];
+    signal input composition_column_line_coeffs_b[8];
+    for(var i = 0; i < 4; i++) {
+        column_c.composition_column_line_coeffs_a[i][0] === composition_column_line_coeffs_a[i * 2];
+        column_c.composition_column_line_coeffs_a[i][1] === composition_column_line_coeffs_a[i * 2 + 1];
+        column_c.composition_column_line_coeffs_b[i][0] === composition_column_line_coeffs_b[i * 2];
+        column_c.composition_column_line_coeffs_b[i][1] === composition_column_line_coeffs_b[i * 2 + 1];
+    }
 }
 
 component main { public [
@@ -93,5 +193,21 @@ component main { public [
     c_wire, c_logup_0, c_logup_1, c_logup_2, c_logup_3, c_logup_next_0,
     c_logup_next_1, c_logup_next_2, c_logup_next_3, claimed_sum, mult,
     constraint_num, oods_point_x, oods_point_y, constraint_denom,
-    oods_a, oods_b, oods_shifted_a, oods_shifted_b
+    oods_a, oods_b, oods_shifted_a, oods_shifted_b,
+    trace_column_line_coeffs_a, trace_column_line_coeffs_b,
+    interaction_column_line_coeffs_a, interaction_column_line_coeffs_b,
+    interaction_shifted_column_line_coeffs_a, interaction_shifted_column_line_coeffs_b,
+    constant_column_line_coeffs_a, constant_column_line_coeffs_b,
+    composition_column_line_coeffs_a, composition_column_line_coeffs_b,
+    sampled_value_trace_a_val, sampled_value_trace_b_val, sampled_value_trace_c_val,
+    sampled_value_interaction_ab_0, sampled_value_interaction_ab_1,
+    sampled_value_interaction_ab_2, sampled_value_interaction_ab_3,
+    sampled_value_interaction_sum_0, sampled_value_interaction_sum_1,
+    sampled_value_interaction_sum_2, sampled_value_interaction_sum_3,
+    sampled_value_interaction_shifted_sum_0, sampled_value_interaction_shifted_sum_1,
+    sampled_value_interaction_shifted_sum_2, sampled_value_interaction_shifted_sum_3,
+    sampled_value_constant_mult, sampled_value_constant_a_wire,
+    sampled_value_constant_b_wire, sampled_value_constant_c_wire,
+    sampled_value_constant_op, sampled_value_composition_0, sampled_value_composition_1,
+    sampled_value_composition_2, sampled_value_composition_3
 ] } = test_prepare();

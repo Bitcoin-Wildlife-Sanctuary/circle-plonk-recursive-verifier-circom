@@ -63,6 +63,9 @@ template prepare_pair_vanishing() {
     oods_shifted_c.x2 <== shift_minus_1.x;
     oods_shifted_c.y2 <== shift_minus_1.y;
 
+    signal output oods_shifted_x[4] <== oods_shifted_c.out_x;
+    signal output oods_shifted_y[4] <== oods_shifted_c.out_y;
+
     signal output oods_shifted_pair_vanishing_a[2];
     signal output oods_shifted_pair_vanishing_b[2];
 

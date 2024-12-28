@@ -21,6 +21,17 @@ pub struct PrepareHints {
 
     pub oods_shifted_a: CM31,
     pub oods_shifted_b: CM31,
+
+    pub trace_column_line_coeffs_a: Vec<CM31>,
+    pub trace_column_line_coeffs_b: Vec<CM31>,
+    pub interaction_column_line_coeffs_a: Vec<CM31>,
+    pub interaction_column_line_coeffs_b: Vec<CM31>,
+    pub interaction_shifted_column_line_coeffs_a: Vec<CM31>,
+    pub interaction_shifted_column_line_coeffs_b: Vec<CM31>,
+    pub constant_column_line_coeffs_a: Vec<CM31>,
+    pub constant_column_line_coeffs_b: Vec<CM31>,
+    pub composition_column_line_coeffs_a: Vec<CM31>,
+    pub composition_column_line_coeffs_b: Vec<CM31>,
 }
 
 impl PrepareHints {
@@ -194,6 +205,78 @@ impl PrepareHints {
         let (oods_shifted_a, oods_shifted_b) =
             prepare_ab(oods_shifted_point.x, oods_shifted_point.y);
 
+        let column_line_coeffs = |y: QM31, evals: &[QM31]| {
+            let y_second_inverse = y.1.inverse();
+            let y_first_times_y_second_inv = y.0 * y_second_inverse;
+
+            let mut a = vec![];
+            let mut b = vec![];
+
+            for eval in evals.iter() {
+                a.push(eval.1 * y_second_inverse);
+                b.push(eval.1 * y_first_times_y_second_inv - eval.0);
+            }
+
+            (a, b)
+        };
+
+        let (trace_column_line_coeffs_a, trace_column_line_coeffs_b) = column_line_coeffs(
+            oods_point.y,
+            &[
+                fiat_shamir_hints.sampled_value_trace_a_val,
+                fiat_shamir_hints.sampled_value_trace_b_val,
+                fiat_shamir_hints.sampled_value_trace_c_val,
+            ],
+        );
+
+        let (interaction_column_line_coeffs_a, interaction_column_line_coeffs_b) =
+            column_line_coeffs(
+                oods_point.y,
+                &[
+                    fiat_shamir_hints.sampled_value_interaction_ab_0,
+                    fiat_shamir_hints.sampled_value_interaction_ab_1,
+                    fiat_shamir_hints.sampled_value_interaction_ab_2,
+                    fiat_shamir_hints.sampled_value_interaction_ab_3,
+                    fiat_shamir_hints.sampled_value_interaction_sum_0,
+                    fiat_shamir_hints.sampled_value_interaction_sum_1,
+                    fiat_shamir_hints.sampled_value_interaction_sum_2,
+                    fiat_shamir_hints.sampled_value_interaction_sum_3,
+                ],
+            );
+
+        let (interaction_shifted_column_line_coeffs_a, interaction_shifted_column_line_coeffs_b) =
+            column_line_coeffs(
+                oods_shifted_point.y,
+                &[
+                    fiat_shamir_hints.sampled_value_interaction_shifted_sum_0,
+                    fiat_shamir_hints.sampled_value_interaction_shifted_sum_1,
+                    fiat_shamir_hints.sampled_value_interaction_shifted_sum_2,
+                    fiat_shamir_hints.sampled_value_interaction_shifted_sum_3,
+                ],
+            );
+
+        let (constant_column_line_coeffs_a, constant_column_line_coeffs_b) = column_line_coeffs(
+            oods_point.y,
+            &[
+                fiat_shamir_hints.sampled_value_constant_mult,
+                fiat_shamir_hints.sampled_value_constant_a_wire,
+                fiat_shamir_hints.sampled_value_constant_b_wire,
+                fiat_shamir_hints.sampled_value_constant_c_wire,
+                fiat_shamir_hints.sampled_value_constant_op,
+            ],
+        );
+
+        let (composition_column_line_coeffs_a, composition_column_line_coeffs_b) =
+            column_line_coeffs(
+                oods_point.y,
+                &[
+                    fiat_shamir_hints.sampled_value_composition_0,
+                    fiat_shamir_hints.sampled_value_composition_1,
+                    fiat_shamir_hints.sampled_value_composition_2,
+                    fiat_shamir_hints.sampled_value_composition_3,
+                ],
+            );
+
         PrepareHints {
             constraint_num,
             claimed_sum,
@@ -202,6 +285,16 @@ impl PrepareHints {
             oods_b,
             oods_shifted_a,
             oods_shifted_b,
+            trace_column_line_coeffs_a,
+            trace_column_line_coeffs_b,
+            interaction_column_line_coeffs_a,
+            interaction_column_line_coeffs_b,
+            interaction_shifted_column_line_coeffs_a,
+            interaction_shifted_column_line_coeffs_b,
+            constant_column_line_coeffs_a,
+            constant_column_line_coeffs_b,
+            composition_column_line_coeffs_a,
+            composition_column_line_coeffs_b,
         }
     }
 }

@@ -11,7 +11,14 @@ fn main() {
     let qm31_to_num_vec = |a: QM31| [a.0 .0 .0, a.0 .1 .0, a.1 .0 .0, a.1 .1 .0];
     let cm31_to_num_vec = |a: CM31| [a.0 .0, a.1 .0];
 
-    let text = json!({
+    let flatten_cm31_vec = |a: &[CM31]| {
+        a.iter()
+            .map(|x| cm31_to_num_vec(*x))
+            .flatten()
+            .collect::<Vec<u32>>()
+    };
+
+    let mut text1 = json!({
         "random_coeff": qm31_to_num_vec(fiat_shamir_hints.random_coeff),
         "a_val": qm31_to_num_vec(fiat_shamir_hints.sampled_value_trace_a_val),
         "b_val": qm31_to_num_vec(fiat_shamir_hints.sampled_value_trace_b_val),
@@ -47,5 +54,46 @@ fn main() {
         "claimed_sum": qm31_to_num_vec(prepare_hints.claimed_sum),
     });
 
-    println!("{}", text.to_string());
+    let text2 = json!({
+        "trace_column_line_coeffs_a": flatten_cm31_vec(&prepare_hints.trace_column_line_coeffs_a),
+        "trace_column_line_coeffs_b": flatten_cm31_vec(&prepare_hints.trace_column_line_coeffs_b),
+        "interaction_column_line_coeffs_a": flatten_cm31_vec(&prepare_hints.interaction_column_line_coeffs_a),
+        "interaction_column_line_coeffs_b": flatten_cm31_vec(&prepare_hints.interaction_column_line_coeffs_b),
+        "interaction_shifted_column_line_coeffs_a": flatten_cm31_vec(&prepare_hints.interaction_shifted_column_line_coeffs_a),
+        "interaction_shifted_column_line_coeffs_b": flatten_cm31_vec(&prepare_hints.interaction_shifted_column_line_coeffs_b),
+        "constant_column_line_coeffs_a": flatten_cm31_vec(&prepare_hints.constant_column_line_coeffs_a),
+        "constant_column_line_coeffs_b": flatten_cm31_vec(&prepare_hints.constant_column_line_coeffs_b),
+        "composition_column_line_coeffs_a": flatten_cm31_vec(&prepare_hints.composition_column_line_coeffs_a),
+        "composition_column_line_coeffs_b": flatten_cm31_vec(&prepare_hints.composition_column_line_coeffs_b),
+        "sampled_value_trace_a_val": qm31_to_num_vec(fiat_shamir_hints.sampled_value_trace_a_val),
+        "sampled_value_trace_b_val": qm31_to_num_vec(fiat_shamir_hints.sampled_value_trace_b_val),
+        "sampled_value_trace_c_val": qm31_to_num_vec(fiat_shamir_hints.sampled_value_trace_c_val),
+        "sampled_value_interaction_ab_0": qm31_to_num_vec(fiat_shamir_hints.sampled_value_interaction_ab_0),
+        "sampled_value_interaction_ab_1": qm31_to_num_vec(fiat_shamir_hints.sampled_value_interaction_ab_1),
+        "sampled_value_interaction_ab_2": qm31_to_num_vec(fiat_shamir_hints.sampled_value_interaction_ab_2),
+        "sampled_value_interaction_ab_3": qm31_to_num_vec(fiat_shamir_hints.sampled_value_interaction_ab_3),
+        "sampled_value_interaction_sum_0": qm31_to_num_vec(fiat_shamir_hints.sampled_value_interaction_sum_0),
+        "sampled_value_interaction_sum_1": qm31_to_num_vec(fiat_shamir_hints.sampled_value_interaction_sum_1),
+        "sampled_value_interaction_sum_2": qm31_to_num_vec(fiat_shamir_hints.sampled_value_interaction_sum_2),
+        "sampled_value_interaction_sum_3": qm31_to_num_vec(fiat_shamir_hints.sampled_value_interaction_sum_3),
+        "sampled_value_interaction_shifted_sum_0": qm31_to_num_vec(fiat_shamir_hints.sampled_value_interaction_shifted_sum_0),
+        "sampled_value_interaction_shifted_sum_1": qm31_to_num_vec(fiat_shamir_hints.sampled_value_interaction_shifted_sum_1),
+        "sampled_value_interaction_shifted_sum_2": qm31_to_num_vec(fiat_shamir_hints.sampled_value_interaction_shifted_sum_2),
+        "sampled_value_interaction_shifted_sum_3": qm31_to_num_vec(fiat_shamir_hints.sampled_value_interaction_shifted_sum_3),
+        "sampled_value_constant_mult": qm31_to_num_vec(fiat_shamir_hints.sampled_value_constant_mult),
+        "sampled_value_constant_a_wire": qm31_to_num_vec(fiat_shamir_hints.sampled_value_constant_a_wire),
+        "sampled_value_constant_b_wire": qm31_to_num_vec(fiat_shamir_hints.sampled_value_constant_b_wire),
+        "sampled_value_constant_c_wire": qm31_to_num_vec(fiat_shamir_hints.sampled_value_constant_c_wire),
+        "sampled_value_constant_op": qm31_to_num_vec(fiat_shamir_hints.sampled_value_constant_op),
+        "sampled_value_composition_0": qm31_to_num_vec(fiat_shamir_hints.sampled_value_composition_0),
+        "sampled_value_composition_1": qm31_to_num_vec(fiat_shamir_hints.sampled_value_composition_1),
+        "sampled_value_composition_2": qm31_to_num_vec(fiat_shamir_hints.sampled_value_composition_2),
+        "sampled_value_composition_3": qm31_to_num_vec(fiat_shamir_hints.sampled_value_composition_3),
+    });
+
+    for (k, v) in text2.as_object().unwrap() {
+        text1.as_object_mut().unwrap().insert(k.clone(), v.clone());
+    }
+
+    println!("{}", text1.to_string());
 }
