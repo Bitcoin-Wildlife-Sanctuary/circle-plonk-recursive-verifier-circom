@@ -1,7 +1,8 @@
 [workspace]
 members = [
     "primitives/poseidon31", "primitives/circle", "primitives/channel", "primitives/bits",
-    "integration/fiat_shamir", "integration/hints", "integration/prepare"
+    "integration/fiat_shamir", "integration/hints", "integration/prepare",
+    "integration/folding"
 ]
 resolver = "2"
 

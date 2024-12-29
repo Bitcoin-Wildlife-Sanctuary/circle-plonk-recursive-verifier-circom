@@ -1,10 +1,9 @@
 use ark_std::{One, UniformRand};
-use log::trace;
 use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 use serde_json::json;
 use std::ops::{Add, Mul, Neg};
-use stwo_prover::core::circle::CirclePoint;
+use stwo_prover::core::circle::{CirclePoint, M31_CIRCLE_GEN};
 use stwo_prover::core::fields::qm31::{SecureField, QM31};
 use stwo_prover::core::fields::{Field, FieldExpOps};
 use stwo_prover::core::poly::circle::CanonicCoset;
@@ -40,6 +39,16 @@ fn main() {
     let point = CirclePoint { x, y };
     let shifted_point = point.add(shift_minus_1.into_ef());
 
+    let random_scalar = u128::rand(&mut prng);
+    let random_point = M31_CIRCLE_GEN.mul(random_scalar);
+
+    let mut bits = vec![];
+    let mut cur = random_scalar;
+    for _ in 0..128 {
+        bits.push((cur & 1) as u8);
+        cur >>= 1;
+    }
+
     let to_num_vec = |a: QM31| [a.0 .0 .0, a.0 .1 .0, a.1 .0 .0, a.1 .1 .0];
 
     let text = json!({
@@ -55,6 +64,9 @@ fn main() {
         "y": to_num_vec(y),
         "shifted_x": to_num_vec(shifted_point.x),
         "shifted_y": to_num_vec(shifted_point.y),
+        "bits": bits,
+        "random_point_x": random_point.x.0,
+        "random_point_y": random_point.y.0,
     });
 
     println!("{}", text.to_string());

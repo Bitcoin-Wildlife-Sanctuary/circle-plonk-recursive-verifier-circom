@@ -58,9 +58,24 @@ template test_fields() {
 
     shifted_x === shifted_point_c.out_x;
     shifted_y === shifted_point_c.out_y;
+
+    component generator = m31_generator();
+
+    signal input bits[128];
+
+    component mul_by_bits = circle_point_m31_only_mul_by_bits(128);
+    mul_by_bits.x <== generator.x;
+    mul_by_bits.y <== generator.y;
+    mul_by_bits.bits_le <== bits;
+
+    signal input random_point_x;
+    signal input random_point_y;
+
+    random_point_x === mul_by_bits.out_x;
+    random_point_y === mul_by_bits.out_y;
 }
 
 component main { public [
     a, b, a_plus_b, a_minus_b, a_times_b, a_inv, a_square,
-    t, x, y, shifted_x, shifted_y
+    t, x, y, shifted_x, shifted_y, bits, random_point_x, random_point_y
 ] } = test_fields();

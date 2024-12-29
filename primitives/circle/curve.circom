@@ -117,3 +117,111 @@ template circle_point_add_m31() {
     out_y_c.b <== y1x2.out;
     out_y <== out_y_c.out;
 }
+
+template circle_point_m31_only_add() {
+    signal input x1;
+    signal input y1;
+
+    signal input x2;
+    signal input y2;
+
+    signal x1x2 <== x1 * x2;
+    signal y1y2 <== y1 * y2;
+    signal x1y2 <== x1 * y2;
+    signal y1x2 <== x2 * y1;
+
+    signal output out_x;
+    signal output out_y;
+
+    out_x <== x1x2 - y1y2;
+    out_y <== x1y2 + y1x2;
+}
+
+template circle_point_m31_only_double() {
+    signal input x;
+    signal input y;
+
+    signal output out_x;
+    signal output out_y;
+
+    signal x_squared <== 2 * x * x;
+    out_x <== x_squared - 1;
+    out_y <== 2 * x * y;
+}
+
+template circle_point_m31_only_select() {
+    signal input x0;
+    signal input y0;
+
+    signal input x1;
+    signal input y1;
+
+    signal input bit;
+
+    signal output out_x;
+    signal output out_y;
+
+    signal t1 <== bit * (x1 - x0);
+    out_x <== t1 + x0;
+
+    signal t2 <== bit * (y1 - y0);
+    out_y <== t2 + y0;
+}
+
+template circle_point_m31_only_mul_by_bits(N) {
+    signal input x;
+    signal input y;
+
+    signal input bits_le[N];
+
+    signal powers_x[N];
+    signal powers_y[N];
+
+    powers_x[0] <== x;
+    powers_y[0] <== y;
+
+    component doubling[N - 1];
+    for(var i = 1; i < N; i++) {
+        doubling[i - 1] = circle_point_m31_only_double();
+        doubling[i - 1].x <== powers_x[i - 1];
+        doubling[i - 1].y <== powers_y[i - 1];
+        powers_x[i] <== doubling[i - 1].out_x;
+        powers_y[i] <== doubling[i - 1].out_y;
+    }
+
+    component select[N];
+
+    select[0] = circle_point_m31_only_select();
+    select[0].x0 <== 1;
+    select[0].y0 <== 0;
+    select[0].x1 <== powers_x[0];
+    select[0].y1 <== powers_y[0];
+    select[0].bit <== bits_le[0];
+
+    component adding[N - 1];
+    for(var i = 1; i < N; i++) {
+        adding[i - 1] = circle_point_m31_only_add();
+        adding[i - 1].x1 <== select[i - 1].out_x;
+        adding[i - 1].y1 <== select[i - 1].out_y;
+        adding[i - 1].x2 <== powers_x[i];
+        adding[i - 1].y2 <== powers_y[i];
+
+        select[i] = circle_point_m31_only_select();
+        select[i].x0 <== select[i - 1].out_x;
+        select[i].y0 <== select[i - 1].out_y;
+        select[i].x1 <== adding[i - 1].out_x;
+        select[i].y1 <== adding[i - 1].out_y;
+        select[i].bit <== bits_le[i];
+    }
+
+    signal output out_x;
+    signal output out_y;
+
+    out_x <== select[N - 1].out_x;
+    out_y <== select[N - 1].out_y;
+}
+
+template m31_generator() {
+    signal output x <== 2;
+    signal output y <== 1268011823;
+}
