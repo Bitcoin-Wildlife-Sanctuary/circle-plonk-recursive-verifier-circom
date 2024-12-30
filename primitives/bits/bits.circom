@@ -69,3 +69,29 @@ template is_zero() {
     out <== -in*inv +1;
     in*out === 0;
 }
+
+template decompose_into_bits(N) {
+    signal input a;
+    signal output bits[N];
+
+    for(var i = 0; i < N; i++) {
+        bits[i] <-- (a >> i) & 1;
+    }
+
+    signal bits_neg[N];
+    for(var i = 0; i < N; i++) {
+        bits_neg[i] <== 1 - bits[i];
+    }
+
+    for(var i = 0; i < N; i++) {
+        bits[i] * bits_neg[i] === 0;
+    }
+
+    signal sum[N];
+    sum[0] <== bits[0];
+    for(var i = 1; i < N; i++) {
+        sum[i] <== sum[i-1] + bits[i] * (1 << i);
+    }
+
+    sum[N - 1] === a;
+}

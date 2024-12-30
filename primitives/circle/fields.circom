@@ -20,6 +20,15 @@ template cm31_add() {
     out[1] <== a[1] + b[1];
 }
 
+template cm31_add_m31() {
+    signal input a[2];
+    signal input b;
+    signal output out[2];
+
+    out[0] <== a[0] + b;
+    out[1] <== a[1];
+}
+
 template cm31_sub() {
     signal input a[2];
     signal input b[2];
@@ -48,6 +57,17 @@ template cm31_mul() {
 
     out[0] <== t1 - t2;
     out[1] <== t3 + t4;
+}
+
+template cm31_mul_m31() {
+    signal input a[2];
+    signal input b;
+
+    signal output out[2];
+
+    for(var i = 0; i < 2; i++) {
+        out[i] <== a[i] * b;
+    }
 }
 
 template cm31_inv() {
@@ -188,6 +208,27 @@ template qm31_mul_m31() {
     for(var i = 0; i < 4; i++) {
         out[i] <== a[i] * b;
     }
+}
+
+template qm31_mul_cm31() {
+    signal input a[4];
+    signal input b[2];
+
+    signal output out[4];
+
+    component s1 = cm31_mul();
+    s1.a[0] <== a[0];
+    s1.a[1] <== a[1];
+    s1.b <== b;
+    out[0] <== s1.out[0];
+    out[1] <== s1.out[1];
+
+    component s2 = cm31_mul();
+    s2.a[0] <== a[2];
+    s2.a[1] <== a[3];
+    s2.b <== b;
+    out[2] <== s2.out[0];
+    out[3] <== s2.out[1];
 }
 
 template qm31_inv() {
