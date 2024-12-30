@@ -5,9 +5,9 @@ use std::collections::HashMap;
 use std::io::Cursor;
 use stwo_prover::core::circle::M31_CIRCLE_GEN;
 use stwo_prover::core::fields::cm31::CM31;
+use stwo_prover::core::fields::FieldExpOps;
 use stwo_prover::core::fields::m31::M31;
 use stwo_prover::core::fields::qm31::QM31;
-use stwo_prover::core::fields::FieldExpOps;
 use stwo_prover::core::prover::StarkProof;
 use stwo_prover::core::utils::bit_reverse_index;
 use stwo_prover::core::vcs::poseidon31_merkle::Poseidon31MerkleHasher;
@@ -17,36 +17,19 @@ pub struct PerQuotientEntry {
     pub x: M31,
     pub y: M31,
 
-    pub trace_a_val: M31,
-    pub trace_b_val: M31,
-    pub trace_c_val: M31,
+    pub trace: Vec<M31>,
+    pub interaction: Vec<M31>,
+    pub constant: Vec<M31>,
+    pub composition: Vec<M31>,
 
-    pub interaction_ab_0: M31,
-    pub interaction_ab_1: M31,
-    pub interaction_ab_2: M31,
-    pub interaction_ab_3: M31,
+    pub trace_sum: QM31,
+    pub interaction_sum: QM31,
+    pub constant_sum: QM31,
+    pub composition_sum: QM31,
+    pub interaction_shifted_sum: QM31,
 
-    pub interaction_sum_0: M31,
-    pub interaction_sum_1: M31,
-    pub interaction_sum_2: M31,
-    pub interaction_sum_3: M31,
-
-    pub constant_mult: M31,
-    pub constant_a_wire: M31,
-    pub constant_b_wire: M31,
-    pub constant_c_wire: M31,
-    pub constant_op: M31,
-
-    pub composition_0: M31,
-    pub composition_1: M31,
-    pub composition_2: M31,
-    pub composition_3: M31,
-
-    pub alpha21_trace: QM31,
-    pub alpha13_interaction: QM31,
-    pub alpha8_constant: QM31,
-    pub alpha4_composition: QM31,
-    pub interaction_shifted: QM31,
+    pub alpha4_times_oods_part_sum: QM31,
+    pub oods_shifted_part_sum: QM31,
 }
 
 pub struct QuotientHints {
@@ -94,30 +77,21 @@ impl QuotientHints {
             values.x = point.x;
             values.y = point.y;
 
-            values.trace_a_val = trace_values[0][idx];
-            values.trace_b_val = trace_values[1][idx];
-            values.trace_c_val = trace_values[2][idx];
+            values.trace = vec![trace_values[0][idx], trace_values[1][idx], trace_values[2][idx]];
+            values.interaction = vec![];
+            for i in 0..8 {
+                values.interaction.push(interaction_values[i][idx]);
+            }
 
-            values.interaction_ab_0 = interaction_values[0][idx];
-            values.interaction_ab_1 = interaction_values[1][idx];
-            values.interaction_ab_2 = interaction_values[2][idx];
-            values.interaction_ab_3 = interaction_values[3][idx];
+            values.constant = vec![];
+            for i in 0..5 {
+                values.constant.push(constant_values[i][idx]);
+            }
 
-            values.interaction_sum_0 = interaction_values[4][idx];
-            values.interaction_sum_1 = interaction_values[5][idx];
-            values.interaction_sum_2 = interaction_values[6][idx];
-            values.interaction_sum_3 = interaction_values[7][idx];
-
-            values.constant_mult = constant_values[0][idx];
-            values.constant_a_wire = constant_values[1][idx];
-            values.constant_b_wire = constant_values[2][idx];
-            values.constant_c_wire = constant_values[3][idx];
-            values.constant_op = constant_values[4][idx];
-
-            values.composition_0 = composition_values[0][idx];
-            values.composition_1 = composition_values[1][idx];
-            values.composition_2 = composition_values[2][idx];
-            values.composition_3 = composition_values[3][idx];
+            values.composition = vec![];
+            for i in 0..4 {
+                values.composition.push(composition_values[i][idx]);
+            }
 
             all_values.insert(*query, values);
         }
@@ -176,106 +150,70 @@ impl QuotientHints {
                 l.y,
                 &prepare_hints.trace_column_line_coeffs_a,
                 &prepare_hints.trace_column_line_coeffs_b,
-                &[l.trace_a_val, l.trace_b_val, l.trace_c_val],
-                &[r.trace_a_val, r.trace_b_val, r.trace_c_val],
+                &l.trace,
+                &r.trace,
             );
 
             let interaction = apply_column_line_coeffs(
                 l.y,
                 &prepare_hints.interaction_column_line_coeffs_a,
                 &prepare_hints.interaction_column_line_coeffs_b,
-                &[
-                    l.interaction_ab_0,
-                    l.interaction_ab_1,
-                    l.interaction_ab_2,
-                    l.interaction_ab_3,
-                    l.interaction_sum_0,
-                    l.interaction_sum_1,
-                    l.interaction_sum_2,
-                    l.interaction_sum_3,
-                ],
-                &[
-                    r.interaction_ab_0,
-                    r.interaction_ab_1,
-                    r.interaction_ab_2,
-                    r.interaction_ab_3,
-                    r.interaction_sum_0,
-                    r.interaction_sum_1,
-                    r.interaction_sum_2,
-                    r.interaction_sum_3,
-                ],
+                &l.interaction,
+                &r.interaction,
             );
 
             let interaction_shifted = apply_column_line_coeffs(
                 l.y,
                 &prepare_hints.interaction_shifted_column_line_coeffs_a,
                 &prepare_hints.interaction_shifted_column_line_coeffs_b,
-                &[
-                    l.interaction_sum_0,
-                    l.interaction_sum_1,
-                    l.interaction_sum_2,
-                    l.interaction_sum_3,
-                ],
-                &[
-                    r.interaction_sum_0,
-                    r.interaction_sum_1,
-                    r.interaction_sum_2,
-                    r.interaction_sum_3,
-                ],
+                &l.interaction[4..],
+                &r.interaction[4..],
             );
 
             let constant = apply_column_line_coeffs(
                 l.y,
                 &prepare_hints.constant_column_line_coeffs_a,
                 &prepare_hints.constant_column_line_coeffs_b,
-                &[
-                    l.constant_mult,
-                    l.constant_a_wire,
-                    l.constant_b_wire,
-                    l.constant_c_wire,
-                    l.constant_op,
-                ],
-                &[
-                    r.constant_mult,
-                    r.constant_a_wire,
-                    r.constant_b_wire,
-                    r.constant_c_wire,
-                    r.constant_op,
-                ],
+                &l.constant,
+                &r.constant,
             );
 
             let composition = apply_column_line_coeffs(
                 l.y,
                 &prepare_hints.composition_column_line_coeffs_a,
                 &prepare_hints.composition_column_line_coeffs_b,
-                &[
-                    l.composition_0,
-                    l.composition_1,
-                    l.composition_2,
-                    l.composition_3,
-                ],
-                &[
-                    r.composition_0,
-                    r.composition_1,
-                    r.composition_2,
-                    r.composition_3,
-                ],
+                &l.composition,
+                &r.composition,
             );
 
-            all_values.get_mut(&idx_l).unwrap().alpha21_trace = alpha.pow(21) * trace.0;
-            all_values.get_mut(&idx_r).unwrap().alpha21_trace = alpha.pow(21) * trace.1;
+            all_values.get_mut(&idx_l).unwrap().trace_sum = trace.0;
+            all_values.get_mut(&idx_r).unwrap().trace_sum = trace.1;
 
-            all_values.get_mut(&idx_l).unwrap().alpha13_interaction = alpha.pow(13) * interaction.0;
-            all_values.get_mut(&idx_r).unwrap().alpha13_interaction = alpha.pow(13) * interaction.1;
+            all_values.get_mut(&idx_l).unwrap().interaction_sum = interaction.0;
+            all_values.get_mut(&idx_r).unwrap().interaction_sum = interaction.1;
 
-            all_values.get_mut(&idx_l).unwrap().alpha8_constant = alpha.pow(8) * constant.0;
-            all_values.get_mut(&idx_r).unwrap().alpha8_constant = alpha.pow(8) * constant.1;
+            all_values.get_mut(&idx_l).unwrap().constant_sum = constant.0;
+            all_values.get_mut(&idx_r).unwrap().constant_sum = constant.1;
 
-            all_values.get_mut(&idx_l).unwrap().alpha4_composition = alpha.pow(4) * composition.0;
-            all_values.get_mut(&idx_r).unwrap().alpha4_composition = alpha.pow(4) * composition.1;
+            all_values.get_mut(&idx_l).unwrap().composition_sum = composition.0;
+            all_values.get_mut(&idx_r).unwrap().composition_sum = composition.1;
 
-            all_values.get_mut(&idx_l).unwrap().interaction_shifted = interaction_shifted.0;
-            all_values.get_mut(&idx_r).unwrap().interaction_shifted = interaction_shifted.1;
+            all_values.get_mut(&idx_l).unwrap().interaction_shifted_sum = interaction_shifted.0;
+            all_values.get_mut(&idx_r).unwrap().interaction_shifted_sum = interaction_shifted.1;
+
+            let oods_part_sum_l = alpha.pow(17) * trace.0 + alpha.pow(9) * interaction.0
+                + alpha.pow(4) * constant.0 + composition.0;
+            let oods_shifted_part_sum_l = interaction_shifted.0;
+
+            let oods_part_sum_r = alpha.pow(17) * trace.1 + alpha.pow(9) * interaction.1
+                + alpha.pow(4) * constant.1 + composition.1;
+            let oods_shifted_part_sum_r = interaction_shifted.1;
+
+            all_values.get_mut(&idx_l).unwrap().alpha4_times_oods_part_sum = alpha.pow(4) * oods_part_sum_l;
+            all_values.get_mut(&idx_r).unwrap().alpha4_times_oods_part_sum = alpha.pow(4) * oods_part_sum_r;
+
+            all_values.get_mut(&idx_l).unwrap().oods_shifted_part_sum = oods_shifted_part_sum_l;
+            all_values.get_mut(&idx_r).unwrap().oods_shifted_part_sum = oods_shifted_part_sum_r;
         }
 
         QuotientHints { map: all_values }

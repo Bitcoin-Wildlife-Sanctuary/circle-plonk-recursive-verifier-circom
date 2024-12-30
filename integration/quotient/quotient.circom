@@ -1,7 +1,6 @@
 pragma circom 2.0.0;
 
-include "num_trace.circom";
-include "num_interaction.circom";
+include "num.circom";
 include "../../primitives/bits/bits.circom";
 include "../../primitives/circle/curve.circom";
 include "../../primitives/circle/fields.circom";
@@ -29,258 +28,279 @@ template compute_quotient_for_individual_query(N) {
     compute_point_z.x2 <== compute_step_for_z.out_x;
     compute_point_z.y2 <== compute_step_for_z.out_y;
 
-    signal input trace_a_val_l;
-    signal input trace_b_val_l;
-    signal input trace_c_val_l;
-    signal input trace_a_val_r;
-    signal input trace_b_val_r;
-    signal input trace_c_val_r;
+    signal input trace_l[3];
+    signal input trace_r[3];
 
-    signal input interaction_ab_0_l;
-    signal input interaction_ab_1_l;
-    signal input interaction_ab_2_l;
-    signal input interaction_ab_3_l;
-    signal input interaction_sum_0_l;
-    signal input interaction_sum_1_l;
-    signal input interaction_sum_2_l;
-    signal input interaction_sum_3_l;
-    signal input interaction_ab_0_r;
-    signal input interaction_ab_1_r;
-    signal input interaction_ab_2_r;
-    signal input interaction_ab_3_r;
-    signal input interaction_sum_0_r;
-    signal input interaction_sum_1_r;
-    signal input interaction_sum_2_r;
-    signal input interaction_sum_3_r;
+    signal input interaction_l[8];
+    signal input interaction_r[8];
 
-    signal input coeffs_trace_a_val_a[2];
-    signal input coeffs_trace_b_val_a[2];
-    signal input coeffs_trace_c_val_a[2];
-    signal input coeffs_trace_a_val_b[2];
-    signal input coeffs_trace_b_val_b[2];
-    signal input coeffs_trace_c_val_b[2];
+    signal input constant_l[5];
+    signal input constant_r[5];
 
-    signal input coeffs_interaction_ab_0_a[2];
-    signal input coeffs_interaction_ab_0_b[2];
-    signal input coeffs_interaction_ab_1_a[2];
-    signal input coeffs_interaction_ab_1_b[2];
-    signal input coeffs_interaction_ab_2_a[2];
-    signal input coeffs_interaction_ab_2_b[2];
-    signal input coeffs_interaction_ab_3_a[2];
-    signal input coeffs_interaction_ab_3_b[2];
-    signal input coeffs_interaction_sum_0_a[2];
-    signal input coeffs_interaction_sum_0_b[2];
-    signal input coeffs_interaction_sum_1_a[2];
-    signal input coeffs_interaction_sum_1_b[2];
-    signal input coeffs_interaction_sum_2_a[2];
-    signal input coeffs_interaction_sum_2_b[2];
-    signal input coeffs_interaction_sum_3_a[2];
-    signal input coeffs_interaction_sum_3_b[2];
+    signal input composition_l[4];
+    signal input composition_r[4];
+
+    signal input coeffs_trace_a[6];
+    signal input coeffs_trace_b[6];
+
+    signal input coeffs_interaction_a[16];
+    signal input coeffs_interaction_b[16];
+
+    signal input coeffs_constant_a[10];
+    signal input coeffs_constant_b[10];
+
+    signal input coeffs_composition_a[8];
+    signal input coeffs_composition_b[8];
+
+    signal input coeffs_interaction_shifted_a[8];
+    signal input coeffs_interaction_shifted_b[8];
 
     signal input alpha[4];
 
-    component num_trace = compute_num_trace();
+    component num_trace = compute_num(3);
     num_trace.y <== compute_point_z.out_y;
-    num_trace.a_val_l <== trace_a_val_l;
-    num_trace.a_val_r <== trace_a_val_r;
-    num_trace.b_val_l <== trace_b_val_l;
-    num_trace.b_val_r <== trace_b_val_r;
-    num_trace.c_val_l <== trace_c_val_l;
-    num_trace.c_val_r <== trace_c_val_r;
-    num_trace.coeffs_trace_a_val_a <== coeffs_trace_a_val_a;
-    num_trace.coeffs_trace_b_val_a <== coeffs_trace_b_val_a;
-    num_trace.coeffs_trace_c_val_a <== coeffs_trace_c_val_a;
-    num_trace.coeffs_trace_a_val_b <== coeffs_trace_a_val_b;
-    num_trace.coeffs_trace_b_val_b <== coeffs_trace_b_val_b;
-    num_trace.coeffs_trace_c_val_b <== coeffs_trace_c_val_b;
+    num_trace.l <== trace_l;
+    num_trace.r <== trace_r;
+    num_trace.coeffs_a <== coeffs_trace_a;
+    num_trace.coeffs_b <== coeffs_trace_b;
     num_trace.alpha <== alpha;
 
-    component num_interaction = compute_num_interaction();
+    component num_interaction = compute_num(8);
     num_interaction.y <== compute_point_z.out_y;
-    num_interaction.interaction_ab_0_l <== interaction_ab_0_l;
-    num_interaction.interaction_ab_1_l <== interaction_ab_1_l;
-    num_interaction.interaction_ab_2_l <== interaction_ab_2_l;
-    num_interaction.interaction_ab_3_l <== interaction_ab_3_l;
-    num_interaction.interaction_sum_0_l <== interaction_sum_0_l;
-    num_interaction.interaction_sum_1_l <== interaction_sum_1_l;
-    num_interaction.interaction_sum_2_l <== interaction_sum_2_l;
-    num_interaction.interaction_sum_3_l <== interaction_sum_3_l;
-
-    num_interaction.interaction_ab_0_r <== interaction_ab_0_r;
-    num_interaction.interaction_ab_1_r <== interaction_ab_1_r;
-    num_interaction.interaction_ab_2_r <== interaction_ab_2_r;
-    num_interaction.interaction_ab_3_r <== interaction_ab_3_r;
-    num_interaction.interaction_sum_0_r <== interaction_sum_0_r;
-    num_interaction.interaction_sum_1_r <== interaction_sum_1_r;
-    num_interaction.interaction_sum_2_r <== interaction_sum_2_r;
-    num_interaction.interaction_sum_3_r <== interaction_sum_3_r;
-
-    num_interaction.coeffs_interaction_ab_0_a <== coeffs_interaction_ab_0_a;
-    num_interaction.coeffs_interaction_ab_1_a <== coeffs_interaction_ab_1_a;
-    num_interaction.coeffs_interaction_ab_2_a <== coeffs_interaction_ab_2_a;
-    num_interaction.coeffs_interaction_ab_3_a <== coeffs_interaction_ab_3_a;
-    num_interaction.coeffs_interaction_sum_0_a <== coeffs_interaction_sum_0_a;
-    num_interaction.coeffs_interaction_sum_1_a <== coeffs_interaction_sum_1_a;
-    num_interaction.coeffs_interaction_sum_2_a <== coeffs_interaction_sum_2_a;
-    num_interaction.coeffs_interaction_sum_3_a <== coeffs_interaction_sum_3_a;
-
-    num_interaction.coeffs_interaction_ab_0_b <== coeffs_interaction_ab_0_b;
-    num_interaction.coeffs_interaction_ab_1_b <== coeffs_interaction_ab_1_b;
-    num_interaction.coeffs_interaction_ab_2_b <== coeffs_interaction_ab_2_b;
-    num_interaction.coeffs_interaction_ab_3_b <== coeffs_interaction_ab_3_b;
-    num_interaction.coeffs_interaction_sum_0_b <== coeffs_interaction_sum_0_b;
-    num_interaction.coeffs_interaction_sum_1_b <== coeffs_interaction_sum_1_b;
-    num_interaction.coeffs_interaction_sum_2_b <== coeffs_interaction_sum_2_b;
-    num_interaction.coeffs_interaction_sum_3_b <== coeffs_interaction_sum_3_b;
+    num_interaction.l <== interaction_l;
+    num_interaction.r <== interaction_r;
+    num_interaction.coeffs_a <== coeffs_interaction_a;
+    num_interaction.coeffs_b <== coeffs_interaction_b;
     num_interaction.alpha <== alpha;
 
-    signal output alpha21_trace_l[4];
-    signal output alpha21_trace_r[4];
+    component num_constant = compute_num(5);
+    num_constant.y <== compute_point_z.out_y;
+    num_constant.l <== constant_l;
+    num_constant.r <== constant_r;
+    num_constant.coeffs_a <== coeffs_constant_a;
+    num_constant.coeffs_b <== coeffs_constant_b;
+    num_constant.alpha <== alpha;
 
-    alpha21_trace_l <== num_trace.num_trace_l;
-    alpha21_trace_r <== num_trace.num_trace_r;
+    component num_composition = compute_num(4);
+    num_composition.y <== compute_point_z.out_y;
+    num_composition.l <== composition_l;
+    num_composition.r <== composition_r;
+    num_composition.coeffs_a <== coeffs_composition_a;
+    num_composition.coeffs_b <== coeffs_composition_b;
+    num_composition.alpha <== alpha;
 
-    signal output alpha13_interaction_l[4];
-    signal output alpha13_interaction_r[4];
+    component num_interaction_shifted = compute_num(4);
+    num_interaction_shifted.y <== compute_point_z.out_y;
+    for(var i = 0; i < 4; i++) {
+        num_interaction_shifted.l[i] <== interaction_l[i + 4];
+        num_interaction_shifted.r[i] <== interaction_r[i + 4];
+    }
+    num_interaction_shifted.coeffs_a <== coeffs_interaction_shifted_a;
+    num_interaction_shifted.coeffs_b <== coeffs_interaction_shifted_b;
+    num_interaction_shifted.alpha <== alpha;
 
-    alpha13_interaction_l <== num_interaction.num_interaction_l;
-    alpha13_interaction_r <== num_interaction.num_interaction_r;
+    signal trace_l_sum[4];
+    signal trace_r_sum[4];
+
+    trace_l_sum <== num_trace.num_l;
+    trace_r_sum <== num_trace.num_r;
+
+    signal interaction_l_sum[4];
+    signal interaction_r_sum[4];
+
+    interaction_l_sum <== num_interaction.num_l;
+    interaction_r_sum <== num_interaction.num_r;
+
+    signal constant_l_sum[4];
+    signal constant_r_sum[4];
+
+    constant_l_sum <== num_constant.num_l;
+    constant_r_sum <== num_constant.num_r;
+
+    signal composition_l_sum[4];
+    signal composition_r_sum[4];
+
+    composition_l_sum <== num_composition.num_l;
+    composition_r_sum <== num_composition.num_r;
+
+    signal output interaction_shifted_l_sum[4];
+    signal output interaction_shifted_r_sum[4];
+
+    interaction_shifted_l_sum <== num_interaction_shifted.num_l;
+    interaction_shifted_r_sum <== num_interaction_shifted.num_r;
+
+    component alpha2 = qm31_mul();
+    alpha2.a <== alpha;
+    alpha2.b <== alpha;
+
+    component alpha4 = qm31_mul();
+    alpha4.a <== alpha2.out;
+    alpha4.b <== alpha2.out;
+
+    component alpha8 = qm31_mul();
+    alpha8.a <== alpha4.out;
+    alpha8.b <== alpha4.out;
+
+    component alpha16 = qm31_mul();
+    alpha16.a <== alpha8.out;
+    alpha16.b <== alpha8.out;
+
+    component alpha12 = qm31_mul();
+    alpha12.a <== alpha8.out;
+    alpha12.b <== alpha4.out;
+
+    component alpha13 = qm31_mul();
+    alpha13.a <== alpha12.out;
+    alpha13.b <== alpha;
+
+    component alpha21 = qm31_mul();
+    alpha21.a <== alpha13.out;
+    alpha21.b <== alpha8.out;
+
+    component alpha21_trace_l = qm31_mul();
+    alpha21_trace_l.a <== alpha21.out;
+    alpha21_trace_l.b <== trace_l_sum;
+
+    component alpha21_trace_r = qm31_mul();
+    alpha21_trace_r.a <== alpha21.out;
+    alpha21_trace_r.b <== trace_r_sum;
+
+    component alpha13_interaction_l = qm31_mul();
+    alpha13_interaction_l.a <== alpha13.out;
+    alpha13_interaction_l.b <== interaction_l_sum;
+
+    component alpha13_interaction_r = qm31_mul();
+    alpha13_interaction_r.a <== alpha13.out;
+    alpha13_interaction_r.b <== interaction_r_sum;
+
+    component alpha8_constant_l = qm31_mul();
+    alpha8_constant_l.a <== alpha8.out;
+    alpha8_constant_l.b <== constant_l_sum;
+
+    component alpha8_constant_r = qm31_mul();
+    alpha8_constant_r.a <== alpha8.out;
+    alpha8_constant_r.b <== constant_r_sum;
+
+    component alpha4_composition_l = qm31_mul();
+    alpha4_composition_l.a <== alpha4.out;
+    alpha4_composition_l.b <== composition_l_sum;
+
+    component alpha4_composition_r = qm31_mul();
+    alpha4_composition_r.a <== alpha4.out;
+    alpha4_composition_r.b <== composition_r_sum;
+
+    component oods_s1_l = qm31_add();
+    oods_s1_l.a <== alpha21_trace_l.out;
+    oods_s1_l.b <== alpha13_interaction_l.out;
+
+    component oods_s2_l = qm31_add();
+    oods_s2_l.a <== oods_s1_l.out;
+    oods_s2_l.b <== alpha8_constant_l.out;
+
+    component oods_s3_l = qm31_add();
+    oods_s3_l.a <== oods_s2_l.out;
+    oods_s3_l.b <== alpha4_composition_l.out;
+
+    component oods_s1_r = qm31_add();
+    oods_s1_r.a <== alpha21_trace_r.out;
+    oods_s1_r.b <== alpha13_interaction_r.out;
+
+    component oods_s2_r = qm31_add();
+    oods_s2_r.a <== oods_s1_r.out;
+    oods_s2_r.b <== alpha8_constant_r.out;
+
+    component oods_s3_r = qm31_add();
+    oods_s3_r.a <== oods_s2_r.out;
+    oods_s3_r.b <== alpha4_composition_r.out;
+
+    signal output alpha4_times_oods_part_l_sum[4];
+    alpha4_times_oods_part_l_sum <== oods_s3_l.out;
+
+    signal output alpha4_times_oods_part_r_sum[4];
+    alpha4_times_oods_part_r_sum <== oods_s3_r.out;
 }
 
 template test_quotient() {
     signal input query;
 
-    signal input trace_a_val_l;
-    signal input trace_b_val_l;
-    signal input trace_c_val_l;
-    signal input trace_a_val_r;
-    signal input trace_b_val_r;
-    signal input trace_c_val_r;
+    signal input trace_l[3];
+    signal input trace_r[3];
 
-    signal input coeffs_trace_a_val_a[2];
-    signal input coeffs_trace_b_val_a[2];
-    signal input coeffs_trace_c_val_a[2];
+    signal input interaction_l[8];
+    signal input interaction_r[8];
 
-    signal input coeffs_trace_a_val_b[2];
-    signal input coeffs_trace_b_val_b[2];
-    signal input coeffs_trace_c_val_b[2];
+    signal input constant_l[5];
+    signal input constant_r[5];
+
+    signal input composition_l[4];
+    signal input composition_r[4];
+
+    signal input coeffs_trace_a[6];
+    signal input coeffs_trace_b[6];
+
+    signal input coeffs_interaction_a[16];
+    signal input coeffs_interaction_b[16];
+
+    signal input coeffs_constant_a[10];
+    signal input coeffs_constant_b[10];
+
+    signal input coeffs_composition_a[8];
+    signal input coeffs_composition_b[8];
+
+    signal input coeffs_interaction_shifted_a[8];
+    signal input coeffs_interaction_shifted_b[8];
 
     signal input alpha[4];
 
     component query_s = compute_quotient_for_individual_query(19);
     query_s.query <== query;
-    query_s.trace_a_val_l <== trace_a_val_l;
-    query_s.trace_a_val_r <== trace_a_val_r;
-    query_s.trace_b_val_l <== trace_b_val_l;
-    query_s.trace_b_val_r <== trace_b_val_r;
-    query_s.trace_c_val_l <== trace_c_val_l;
-    query_s.trace_c_val_r <== trace_c_val_r;
-    query_s.coeffs_trace_a_val_a <== coeffs_trace_a_val_a;
-    query_s.coeffs_trace_b_val_a <== coeffs_trace_b_val_a;
-    query_s.coeffs_trace_c_val_a <== coeffs_trace_c_val_a;
-    query_s.coeffs_trace_a_val_b <== coeffs_trace_a_val_b;
-    query_s.coeffs_trace_b_val_b <== coeffs_trace_b_val_b;
-    query_s.coeffs_trace_c_val_b <== coeffs_trace_c_val_b;
     query_s.alpha <== alpha;
 
-    signal input interaction_ab_0_l;
-    signal input interaction_ab_1_l;
-    signal input interaction_ab_2_l;
-    signal input interaction_ab_3_l;
-    signal input interaction_sum_0_l;
-    signal input interaction_sum_1_l;
-    signal input interaction_sum_2_l;
-    signal input interaction_sum_3_l;
-    signal input interaction_ab_0_r;
-    signal input interaction_ab_1_r;
-    signal input interaction_ab_2_r;
-    signal input interaction_ab_3_r;
-    signal input interaction_sum_0_r;
-    signal input interaction_sum_1_r;
-    signal input interaction_sum_2_r;
-    signal input interaction_sum_3_r;
+    query_s.trace_l <== trace_l;
+    query_s.trace_r <== trace_r;
+    query_s.coeffs_trace_a <== coeffs_trace_a;
+    query_s.coeffs_trace_b <== coeffs_trace_b;
 
-    signal input coeffs_interaction_ab_0_a[2];
-    signal input coeffs_interaction_ab_0_b[2];
-    signal input coeffs_interaction_ab_1_a[2];
-    signal input coeffs_interaction_ab_1_b[2];
-    signal input coeffs_interaction_ab_2_a[2];
-    signal input coeffs_interaction_ab_2_b[2];
-    signal input coeffs_interaction_ab_3_a[2];
-    signal input coeffs_interaction_ab_3_b[2];
-    signal input coeffs_interaction_sum_0_a[2];
-    signal input coeffs_interaction_sum_0_b[2];
-    signal input coeffs_interaction_sum_1_a[2];
-    signal input coeffs_interaction_sum_1_b[2];
-    signal input coeffs_interaction_sum_2_a[2];
-    signal input coeffs_interaction_sum_2_b[2];
-    signal input coeffs_interaction_sum_3_a[2];
-    signal input coeffs_interaction_sum_3_b[2];
+    query_s.interaction_l <== interaction_l;
+    query_s.interaction_r <== interaction_r;
+    query_s.coeffs_interaction_a <== coeffs_interaction_a;
+    query_s.coeffs_interaction_b <== coeffs_interaction_b;
 
-    query_s.interaction_ab_0_l <== interaction_ab_0_l;
-    query_s.interaction_ab_1_l <== interaction_ab_1_l;
-    query_s.interaction_ab_2_l <== interaction_ab_2_l;
-    query_s.interaction_ab_3_l <== interaction_ab_3_l;
-    query_s.interaction_sum_0_l <== interaction_sum_0_l;
-    query_s.interaction_sum_1_l <== interaction_sum_1_l;
-    query_s.interaction_sum_2_l <== interaction_sum_2_l;
-    query_s.interaction_sum_3_l <== interaction_sum_3_l;
+    query_s.constant_l <== constant_l;
+    query_s.constant_r <== constant_r;
+    query_s.coeffs_constant_a <== coeffs_constant_a;
+    query_s.coeffs_constant_b <== coeffs_constant_b;
 
-    query_s.interaction_ab_0_r <== interaction_ab_0_r;
-    query_s.interaction_ab_1_r <== interaction_ab_1_r;
-    query_s.interaction_ab_2_r <== interaction_ab_2_r;
-    query_s.interaction_ab_3_r <== interaction_ab_3_r;
-    query_s.interaction_sum_0_r <== interaction_sum_0_r;
-    query_s.interaction_sum_1_r <== interaction_sum_1_r;
-    query_s.interaction_sum_2_r <== interaction_sum_2_r;
-    query_s.interaction_sum_3_r <== interaction_sum_3_r;
+    query_s.composition_l <== composition_l;
+    query_s.composition_r <== composition_r;
+    query_s.coeffs_composition_a <== coeffs_composition_a;
+    query_s.coeffs_composition_b <== coeffs_composition_b;
 
-    query_s.coeffs_interaction_ab_0_a <== coeffs_interaction_ab_0_a;
-    query_s.coeffs_interaction_ab_1_a <== coeffs_interaction_ab_1_a;
-    query_s.coeffs_interaction_ab_2_a <== coeffs_interaction_ab_2_a;
-    query_s.coeffs_interaction_ab_3_a <== coeffs_interaction_ab_3_a;
-    query_s.coeffs_interaction_sum_0_a <== coeffs_interaction_sum_0_a;
-    query_s.coeffs_interaction_sum_1_a <== coeffs_interaction_sum_1_a;
-    query_s.coeffs_interaction_sum_2_a <== coeffs_interaction_sum_2_a;
-    query_s.coeffs_interaction_sum_3_a <== coeffs_interaction_sum_3_a;
+    query_s.coeffs_interaction_shifted_a <== coeffs_interaction_shifted_a;
+    query_s.coeffs_interaction_shifted_b <== coeffs_interaction_shifted_b;
 
-    query_s.coeffs_interaction_ab_0_b <== coeffs_interaction_ab_0_b;
-    query_s.coeffs_interaction_ab_1_b <== coeffs_interaction_ab_1_b;
-    query_s.coeffs_interaction_ab_2_b <== coeffs_interaction_ab_2_b;
-    query_s.coeffs_interaction_ab_3_b <== coeffs_interaction_ab_3_b;
-    query_s.coeffs_interaction_sum_0_b <== coeffs_interaction_sum_0_b;
-    query_s.coeffs_interaction_sum_1_b <== coeffs_interaction_sum_1_b;
-    query_s.coeffs_interaction_sum_2_b <== coeffs_interaction_sum_2_b;
-    query_s.coeffs_interaction_sum_3_b <== coeffs_interaction_sum_3_b;
+    signal input interaction_shifted_l_sum[4];
+    signal input interaction_shifted_r_sum[4];
+    interaction_shifted_l_sum === query_s.interaction_shifted_l_sum;
+    interaction_shifted_r_sum === query_s.interaction_shifted_r_sum;
 
-    signal input alpha13_interaction_l[4];
-    signal input alpha13_interaction_r[4];
-
-    signal input alpha21_trace_l[4];
-    signal input alpha21_trace_r[4];
-
-    alpha21_trace_l === query_s.alpha21_trace_l;
-    alpha21_trace_r === query_s.alpha21_trace_r;
-
-    alpha13_interaction_l === query_s.alpha13_interaction_l;
-    alpha13_interaction_r === query_s.alpha13_interaction_r;
+    signal input alpha4_times_oods_part_l_sum[4];
+    signal input alpha4_times_oods_part_r_sum[4];
+    alpha4_times_oods_part_l_sum === query_s.alpha4_times_oods_part_l_sum;
+    alpha4_times_oods_part_r_sum === query_s.alpha4_times_oods_part_r_sum;
 }
 
 component main { public [
-    query, alpha, trace_a_val_l, trace_b_val_l, trace_c_val_l,
-    trace_a_val_r, trace_b_val_r, trace_c_val_r,
-    coeffs_trace_a_val_a, coeffs_trace_b_val_a, coeffs_trace_c_val_a,
-    coeffs_trace_a_val_b, coeffs_trace_b_val_b, coeffs_trace_c_val_b,
-    alpha21_trace_l, alpha21_trace_r,
-    interaction_ab_0_l, interaction_ab_0_r, interaction_ab_1_l, interaction_ab_1_r,
-    interaction_ab_2_l, interaction_ab_2_r, interaction_ab_3_l, interaction_ab_3_r,
-    interaction_sum_0_l, interaction_sum_0_r, interaction_sum_1_l, interaction_sum_1_r,
-    interaction_sum_2_l, interaction_sum_2_r, interaction_sum_3_l, interaction_sum_3_r,
-    coeffs_interaction_ab_0_a, coeffs_interaction_ab_0_b, coeffs_interaction_ab_1_a, coeffs_interaction_ab_1_b,
-    coeffs_interaction_ab_2_a, coeffs_interaction_ab_2_b, coeffs_interaction_ab_3_a, coeffs_interaction_ab_3_b,
-    coeffs_interaction_sum_0_a, coeffs_interaction_sum_0_b,
-    coeffs_interaction_sum_1_a, coeffs_interaction_sum_1_b,
-    coeffs_interaction_sum_2_a, coeffs_interaction_sum_2_b,
-    coeffs_interaction_sum_3_a, coeffs_interaction_sum_3_b,
-    alpha13_interaction_l, alpha13_interaction_r
+    query, alpha,
+    trace_l, trace_r,
+    coeffs_trace_a, coeffs_trace_b,
+    interaction_l, interaction_r,
+    coeffs_interaction_a, coeffs_interaction_b,
+    constant_l, constant_r,
+    coeffs_constant_a, coeffs_constant_b,
+    composition_l, composition_r,
+    coeffs_composition_a, coeffs_composition_b,
+    coeffs_interaction_shifted_a, coeffs_interaction_shifted_b,
+    interaction_shifted_l_sum, interaction_shifted_r_sum,
+    alpha4_times_oods_part_l_sum, alpha4_times_oods_part_r_sum
 ] } = test_quotient();
