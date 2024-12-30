@@ -1,4 +1,4 @@
-pragma circom 2.0.0
+pragma circom 2.0.0;
 
 include "apply_column_line_coeffs.circom";
 
@@ -187,9 +187,13 @@ template compute_num_interaction() {
     l_s5.a <== l_s4.out;
     l_s5.b <== l_m6.out;
 
-    component l_s6 = qm31_add_cm31();
+    component l_s6 = qm31_add();
     l_s6.a <== l_s5.out;
     l_s6.b <== l_m7.out;
+
+    component l_s7 = qm31_add_cm31();
+    l_s7.a <== l_s6.out;
+    l_s7.b <== num_interaction_sum_3.res_z;
 
     component r_m1 = qm31_mul_cm31();
     r_m1.a <== alpha7.out;
@@ -239,9 +243,13 @@ template compute_num_interaction() {
     r_s5.a <== r_s4.out;
     r_s5.b <== r_m6.out;
 
-    component r_s6 = qm31_add_cm31();
+    component r_s6 = qm31_add();
     r_s6.a <== r_s5.out;
     r_s6.b <== r_m7.out;
+
+    component r_s7 = qm31_add_cm31();
+    r_s7.a <== r_s6.out;
+    r_s7.b <== num_interaction_sum_3.res_conjugated_z;
 
     component alpha12 = qm31_mul();
     alpha12.a <== alpha8.out;
@@ -253,11 +261,11 @@ template compute_num_interaction() {
 
     component alpha13_interaction_l = qm31_mul();
     alpha13_interaction_l.a <== alpha13.out;
-    alpha13_interaction_l.b <== l_s6.out;
+    alpha13_interaction_l.b <== l_s7.out;
 
     component alpha13_interaction_r = qm31_mul();
     alpha13_interaction_r.a <== alpha13.out;
-    alpha13_interaction_r.b <== r_s6.out;
+    alpha13_interaction_r.b <== r_s7.out;
 
     signal output num_interaction_l[4];
     num_interaction_l <== alpha13_interaction_l.out;
