@@ -95,3 +95,16 @@ template decompose_into_bits(N) {
 
     sum[N - 1] === a;
 }
+
+template compose_bits(N) {
+    signal input bits[N];
+    signal output out;
+
+    signal sum[N];
+    sum[0] <== bits[0];
+    for(var i = 1; i < N; i++) {
+        sum[i] <== sum[i-1] + bits[i] * (1 << i);
+    }
+
+    out <== sum[N - 1];
+}

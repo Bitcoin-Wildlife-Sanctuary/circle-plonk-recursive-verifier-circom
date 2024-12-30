@@ -120,6 +120,23 @@ template qm31_add() {
     out[3] <== cm2.out[1];
 }
 
+template qm31_add_cm31() {
+    signal input a[4];
+    signal input b[2];
+    signal output out[4];
+
+    component cm1 = cm31_add();
+    cm1.a[0] <== a[0];
+    cm1.a[1] <== a[1];
+    cm1.b[0] <== b[0];
+    cm1.b[1] <== b[1];
+    out[0] <== cm1.out[0];
+    out[1] <== cm1.out[1];
+
+    out[2] <== a[2];
+    out[3] <== a[3];
+}
+
 template qm31_sub() {
     signal input a[4];
     signal input b[4];

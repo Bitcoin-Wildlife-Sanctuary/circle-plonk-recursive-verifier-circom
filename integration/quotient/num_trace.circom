@@ -1,6 +1,7 @@
-pragma circom 2.0.0
+pragma circom 2.0.0;
 
 include "apply_column_line_coeffs.circom";
+include "../../primitives/circle/fields.circom";
 
 template compute_num_trace() {
     signal input y;
@@ -71,7 +72,7 @@ template compute_num_trace() {
     alpha21.b <== alpha;
 
     component l_m1 = qm31_mul_cm31();
-    l_m1.a <== alpha2;
+    l_m1.a <== alpha2.out;
     l_m1.b <== num_trace_a_val.res_z;
 
     component l_m2 = qm31_mul_cm31();
@@ -87,7 +88,7 @@ template compute_num_trace() {
     l_s2.b <== num_trace_c_val.res_z;
 
     component r_m1 = qm31_mul_cm31();
-    r_m1.a <== alpha2;
+    r_m1.a <== alpha2.out;
     r_m1.b <== num_trace_a_val.res_conjugated_z;
 
     component r_m2 = qm31_mul_cm31();
