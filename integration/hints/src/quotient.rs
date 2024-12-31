@@ -5,9 +5,9 @@ use std::collections::HashMap;
 use std::io::Cursor;
 use stwo_prover::core::circle::M31_CIRCLE_GEN;
 use stwo_prover::core::fields::cm31::CM31;
-use stwo_prover::core::fields::FieldExpOps;
 use stwo_prover::core::fields::m31::M31;
 use stwo_prover::core::fields::qm31::QM31;
+use stwo_prover::core::fields::FieldExpOps;
 use stwo_prover::core::prover::StarkProof;
 use stwo_prover::core::utils::bit_reverse_index;
 use stwo_prover::core::vcs::poseidon31_merkle::Poseidon31MerkleHasher;
@@ -28,8 +28,7 @@ pub struct PerQuotientEntry {
     pub composition_sum: QM31,
     pub interaction_shifted_sum: QM31,
 
-    pub alpha4_times_oods_part_sum: QM31,
-    pub oods_shifted_part_sum: QM31,
+    pub sum: QM31,
 }
 
 pub struct QuotientHints {
@@ -77,7 +76,11 @@ impl QuotientHints {
             values.x = point.x;
             values.y = point.y;
 
-            values.trace = vec![trace_values[0][idx], trace_values[1][idx], trace_values[2][idx]];
+            values.trace = vec![
+                trace_values[0][idx],
+                trace_values[1][idx],
+                trace_values[2][idx],
+            ];
             values.interaction = vec![];
             for i in 0..8 {
                 values.interaction.push(interaction_values[i][idx]);
@@ -139,6 +142,16 @@ impl QuotientHints {
                 (v_l, v_r)
             };
 
+        let denominator_inverses = |a: CM31, b: CM31, x: M31, y: M31| {
+            let res_for_z = b + x - a * y;
+            let res_for_conjugated_z = b + x + a * y;
+
+            let inv_res_for_z = res_for_z.inverse();
+            let inv_res_for_conjugated_z = res_for_conjugated_z.inverse();
+
+            (inv_res_for_z, inv_res_for_conjugated_z)
+        };
+
         for queries_parent in queries_parents.iter() {
             let idx_l = queries_parent << 1;
             let idx_r = (queries_parent << 1) + 1u32;
@@ -146,8 +159,11 @@ impl QuotientHints {
             let l = all_values.get(&idx_l).unwrap();
             let r = all_values.get(&idx_r).unwrap();
 
+            let x = l.x;
+            let y = l.y;
+
             let trace = apply_column_line_coeffs(
-                l.y,
+                y,
                 &prepare_hints.trace_column_line_coeffs_a,
                 &prepare_hints.trace_column_line_coeffs_b,
                 &l.trace,
@@ -155,7 +171,7 @@ impl QuotientHints {
             );
 
             let interaction = apply_column_line_coeffs(
-                l.y,
+                y,
                 &prepare_hints.interaction_column_line_coeffs_a,
                 &prepare_hints.interaction_column_line_coeffs_b,
                 &l.interaction,
@@ -163,7 +179,7 @@ impl QuotientHints {
             );
 
             let interaction_shifted = apply_column_line_coeffs(
-                l.y,
+                y,
                 &prepare_hints.interaction_shifted_column_line_coeffs_a,
                 &prepare_hints.interaction_shifted_column_line_coeffs_b,
                 &l.interaction[4..],
@@ -171,7 +187,7 @@ impl QuotientHints {
             );
 
             let constant = apply_column_line_coeffs(
-                l.y,
+                y,
                 &prepare_hints.constant_column_line_coeffs_a,
                 &prepare_hints.constant_column_line_coeffs_b,
                 &l.constant,
@@ -179,7 +195,7 @@ impl QuotientHints {
             );
 
             let composition = apply_column_line_coeffs(
-                l.y,
+                y,
                 &prepare_hints.composition_column_line_coeffs_a,
                 &prepare_hints.composition_column_line_coeffs_b,
                 &l.composition,
@@ -201,19 +217,34 @@ impl QuotientHints {
             all_values.get_mut(&idx_l).unwrap().interaction_shifted_sum = interaction_shifted.0;
             all_values.get_mut(&idx_r).unwrap().interaction_shifted_sum = interaction_shifted.1;
 
-            let oods_part_sum_l = alpha.pow(17) * trace.0 + alpha.pow(9) * interaction.0
-                + alpha.pow(4) * constant.0 + composition.0;
+            let oods_part_sum_l = alpha.pow(17) * trace.0
+                + alpha.pow(9) * interaction.0
+                + alpha.pow(4) * constant.0
+                + composition.0;
             let oods_shifted_part_sum_l = interaction_shifted.0;
 
-            let oods_part_sum_r = alpha.pow(17) * trace.1 + alpha.pow(9) * interaction.1
-                + alpha.pow(4) * constant.1 + composition.1;
+            let oods_part_sum_r = alpha.pow(17) * trace.1
+                + alpha.pow(9) * interaction.1
+                + alpha.pow(4) * constant.1
+                + composition.1;
             let oods_shifted_part_sum_r = interaction_shifted.1;
 
-            all_values.get_mut(&idx_l).unwrap().alpha4_times_oods_part_sum = alpha.pow(4) * oods_part_sum_l;
-            all_values.get_mut(&idx_r).unwrap().alpha4_times_oods_part_sum = alpha.pow(4) * oods_part_sum_r;
+            let (oods_l, oods_r) =
+                denominator_inverses(prepare_hints.oods_a, prepare_hints.oods_b, x, y);
+            let (oods_shifted_l, oods_shifted_r) = denominator_inverses(
+                prepare_hints.oods_shifted_a,
+                prepare_hints.oods_shifted_b,
+                x,
+                y,
+            );
 
-            all_values.get_mut(&idx_l).unwrap().oods_shifted_part_sum = oods_shifted_part_sum_l;
-            all_values.get_mut(&idx_r).unwrap().oods_shifted_part_sum = oods_shifted_part_sum_r;
+            let sum_l = alpha.pow(4) * oods_part_sum_l * QM31::from(oods_l)
+                + oods_shifted_part_sum_l * QM31::from(oods_shifted_l);
+            let sum_r = alpha.pow(4) * oods_part_sum_r * QM31::from(oods_r)
+                + oods_shifted_part_sum_r * QM31::from(oods_shifted_r);
+
+            all_values.get_mut(&idx_l).unwrap().sum = sum_l;
+            all_values.get_mut(&idx_r).unwrap().sum = sum_r;
         }
 
         QuotientHints { map: all_values }

@@ -1,6 +1,7 @@
 pragma circom 2.0.0;
 
 include "num.circom";
+include "pair_vanishing.circom";
 include "../../primitives/bits/bits.circom";
 include "../../primitives/circle/curve.circom";
 include "../../primitives/circle/fields.circom";
@@ -123,12 +124,6 @@ template compute_quotient_for_individual_query(N) {
     composition_l_sum <== num_composition.num_l;
     composition_r_sum <== num_composition.num_r;
 
-    signal output interaction_shifted_l_sum[4];
-    signal output interaction_shifted_r_sum[4];
-
-    interaction_shifted_l_sum <== num_interaction_shifted.num_l;
-    interaction_shifted_r_sum <== num_interaction_shifted.num_r;
-
     component alpha2 = qm31_mul();
     alpha2.a <== alpha;
     alpha2.b <== alpha;
@@ -218,6 +213,53 @@ template compute_quotient_for_individual_query(N) {
 
     signal output alpha4_times_oods_part_r_sum[4];
     alpha4_times_oods_part_r_sum <== oods_s3_r.out;
+
+    signal input oods_a[2];
+    signal input oods_b[2];
+    signal input oods_shifted_a[2];
+    signal input oods_shifted_b[2];
+
+    component denominator_inverses_oods = pair_vanishing_inverse();
+    denominator_inverses_oods.a <== oods_a;
+    denominator_inverses_oods.b <== oods_b;
+    denominator_inverses_oods.z_x <== compute_point_z.out_x;
+    denominator_inverses_oods.z_y <== compute_point_z.out_y;
+
+    component denominator_inverses_oods_shifted = pair_vanishing_inverse();
+    denominator_inverses_oods_shifted.a <== oods_shifted_a;
+    denominator_inverses_oods_shifted.b <== oods_shifted_b;
+    denominator_inverses_oods_shifted.z_x <== compute_point_z.out_x;
+    denominator_inverses_oods_shifted.z_y <== compute_point_z.out_y;
+
+    component sum_l_m1 = qm31_mul_cm31();
+    sum_l_m1.a <== alpha4_times_oods_part_l_sum;
+    sum_l_m1.b <== denominator_inverses_oods.inverse_res_for_z;
+
+    component sum_l_m2 = qm31_mul_cm31();
+    sum_l_m2.a <== num_interaction_shifted.num_l;
+    sum_l_m2.b <== denominator_inverses_oods_shifted.inverse_res_for_z;
+
+    component sum_l_s = qm31_add();
+    sum_l_s.a <== sum_l_m1.out;
+    sum_l_s.b <== sum_l_m2.out;
+
+    component sum_r_m1 = qm31_mul_cm31();
+    sum_r_m1.a <== alpha4_times_oods_part_r_sum;
+    sum_r_m1.b <== denominator_inverses_oods.inverse_res_for_conjugated_z;
+
+    component sum_r_m2 = qm31_mul_cm31();
+    sum_r_m2.a <== num_interaction_shifted.num_r;
+    sum_r_m2.b <== denominator_inverses_oods_shifted.inverse_res_for_conjugated_z;
+
+    component sum_r_s = qm31_add();
+    sum_r_s.a <== sum_r_m1.out;
+    sum_r_s.b <== sum_r_m2.out;
+
+    signal output sum_l[4];
+    signal output sum_r[4];
+
+    sum_l <== sum_l_s.out;
+    sum_r <== sum_r_s.out;
 }
 
 template test_quotient() {
@@ -279,15 +321,20 @@ template test_quotient() {
     query_s.coeffs_interaction_shifted_a <== coeffs_interaction_shifted_a;
     query_s.coeffs_interaction_shifted_b <== coeffs_interaction_shifted_b;
 
-    signal input interaction_shifted_l_sum[4];
-    signal input interaction_shifted_r_sum[4];
-    interaction_shifted_l_sum === query_s.interaction_shifted_l_sum;
-    interaction_shifted_r_sum === query_s.interaction_shifted_r_sum;
+    signal input oods_a[2];
+    signal input oods_b[2];
+    signal input oods_shifted_a[2];
+    signal input oods_shifted_b[2];
 
-    signal input alpha4_times_oods_part_l_sum[4];
-    signal input alpha4_times_oods_part_r_sum[4];
-    alpha4_times_oods_part_l_sum === query_s.alpha4_times_oods_part_l_sum;
-    alpha4_times_oods_part_r_sum === query_s.alpha4_times_oods_part_r_sum;
+    query_s.oods_a <== oods_a;
+    query_s.oods_b <== oods_b;
+    query_s.oods_shifted_a <== oods_shifted_a;
+    query_s.oods_shifted_b <== oods_shifted_b;
+
+    signal input sum_l[4];
+    signal input sum_r[4];
+    sum_l === query_s.sum_l;
+    sum_r === query_s.sum_r;
 }
 
 component main { public [
@@ -301,6 +348,6 @@ component main { public [
     composition_l, composition_r,
     coeffs_composition_a, coeffs_composition_b,
     coeffs_interaction_shifted_a, coeffs_interaction_shifted_b,
-    interaction_shifted_l_sum, interaction_shifted_r_sum,
-    alpha4_times_oods_part_l_sum, alpha4_times_oods_part_r_sum
+    sum_l, sum_r,
+    oods_a, oods_b, oods_shifted_a, oods_shifted_b
 ] } = test_quotient();

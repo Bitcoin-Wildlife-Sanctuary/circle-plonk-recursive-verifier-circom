@@ -16,25 +16,55 @@ fn main() {
     let query_conjugated_z = (query_parent << 1) + 1;
 
     let trace_l = quotient_hints.map.get(&query_z).unwrap().trace.clone();
-    let trace_r = quotient_hints.map.get(&query_conjugated_z).unwrap().trace.clone();
+    let trace_r = quotient_hints
+        .map
+        .get(&query_conjugated_z)
+        .unwrap()
+        .trace
+        .clone();
 
     let coeffs_trace_a = prepare_hints.trace_column_line_coeffs_a;
     let coeffs_trace_b = prepare_hints.trace_column_line_coeffs_b;
 
-    let interaction_l = quotient_hints.map.get(&query_z).unwrap().interaction.clone();
-    let interaction_r = quotient_hints.map.get(&query_conjugated_z).unwrap().interaction.clone();
+    let interaction_l = quotient_hints
+        .map
+        .get(&query_z)
+        .unwrap()
+        .interaction
+        .clone();
+    let interaction_r = quotient_hints
+        .map
+        .get(&query_conjugated_z)
+        .unwrap()
+        .interaction
+        .clone();
 
     let coeffs_interaction_a = prepare_hints.interaction_column_line_coeffs_a;
     let coeffs_interaction_b = prepare_hints.interaction_column_line_coeffs_b;
 
     let constant_l = quotient_hints.map.get(&query_z).unwrap().constant.clone();
-    let constant_r = quotient_hints.map.get(&query_conjugated_z).unwrap().constant.clone();
+    let constant_r = quotient_hints
+        .map
+        .get(&query_conjugated_z)
+        .unwrap()
+        .constant
+        .clone();
 
     let coeffs_constant_a = prepare_hints.constant_column_line_coeffs_a;
     let coeffs_constant_b = prepare_hints.constant_column_line_coeffs_b;
 
-    let composition_l = quotient_hints.map.get(&query_z).unwrap().composition.clone();
-    let composition_r = quotient_hints.map.get(&query_conjugated_z).unwrap().composition.clone();
+    let composition_l = quotient_hints
+        .map
+        .get(&query_z)
+        .unwrap()
+        .composition
+        .clone();
+    let composition_r = quotient_hints
+        .map
+        .get(&query_conjugated_z)
+        .unwrap()
+        .composition
+        .clone();
 
     let coeffs_composition_a = prepare_hints.composition_column_line_coeffs_a;
     let coeffs_composition_b = prepare_hints.composition_column_line_coeffs_b;
@@ -42,35 +72,17 @@ fn main() {
     let coeffs_interaction_shifted_a = prepare_hints.interaction_shifted_column_line_coeffs_a;
     let coeffs_interaction_shifted_b = prepare_hints.interaction_shifted_column_line_coeffs_b;
 
-    let trace_l_sum = quotient_hints.map.get(&query_z).unwrap().trace_sum;
-    let trace_r_sum = quotient_hints
-        .map
-        .get(&query_conjugated_z)
-        .unwrap()
-        .trace_sum;
+    let sum_l = quotient_hints.map.get(&query_z).unwrap().sum;
+    let sum_r = quotient_hints.map.get(&query_conjugated_z).unwrap().sum;
 
-    let interaction_l_sum = quotient_hints.map.get(&query_z).unwrap().interaction_sum;
-    let interaction_r_sum = quotient_hints.map.get(&query_conjugated_z).unwrap().interaction_sum;
-
-    let constant_l_sum = quotient_hints.map.get(&query_z).unwrap().constant_sum;
-    let constant_r_sum = quotient_hints.map.get(&query_conjugated_z).unwrap().constant_sum;
-
-    let composition_l_sum = quotient_hints.map.get(&query_z).unwrap().composition_sum;
-    let composition_r_sum = quotient_hints.map.get(&query_conjugated_z).unwrap().composition_sum;
-
-    let interaction_shifted_l_sum = quotient_hints.map.get(&query_z).unwrap().interaction_shifted_sum;
-    let interaction_shifted_r_sum = quotient_hints.map.get(&query_conjugated_z).unwrap().interaction_shifted_sum;
-
-    let alpha4_times_oods_part_l_sum = quotient_hints.map.get(&query_z).unwrap().alpha4_times_oods_part_sum;
-    let alpha4_times_oods_part_r_sum = quotient_hints.map.get(&query_conjugated_z).unwrap().alpha4_times_oods_part_sum;
-
-    let qm31_to_num_vec = |a: QM31| [a.0.0.0, a.0.1.0, a.1.0.0, a.1.1.0];
+    let qm31_to_num_vec = |a: QM31| [a.0 .0 .0, a.0 .1 .0, a.1 .0 .0, a.1 .1 .0];
+    let cm31_to_num_vec = |a: CM31| [a.0 .0, a.1 .0];
     let m31_vec_to_num_vec = |a: &[M31]| a.iter().map(|x| x.0).collect::<Vec<_>>();
     let cm31_vec_to_num_vec = |a: &[CM31]| {
         let mut res = vec![];
         for entry in a {
-            res.push(entry.0.0);
-            res.push(entry.1.0);
+            res.push(entry.0 .0);
+            res.push(entry.1 .0);
         }
         res
     };
@@ -99,10 +111,12 @@ fn main() {
         "coeffs_composition_b": cm31_vec_to_num_vec(&coeffs_composition_b),
         "coeffs_interaction_shifted_a": cm31_vec_to_num_vec(&coeffs_interaction_shifted_a),
         "coeffs_interaction_shifted_b": cm31_vec_to_num_vec(&coeffs_interaction_shifted_b),
-        "interaction_shifted_l_sum": qm31_to_num_vec(interaction_shifted_l_sum),
-        "interaction_shifted_r_sum": qm31_to_num_vec(interaction_shifted_r_sum),
-        "alpha4_times_oods_part_l_sum": qm31_to_num_vec(alpha4_times_oods_part_l_sum),
-        "alpha4_times_oods_part_r_sum": qm31_to_num_vec(alpha4_times_oods_part_r_sum)
+        "sum_l": qm31_to_num_vec(sum_l),
+        "sum_r": qm31_to_num_vec(sum_r),
+        "oods_a": cm31_to_num_vec(prepare_hints.oods_a),
+        "oods_b": cm31_to_num_vec(prepare_hints.oods_b),
+        "oods_shifted_a": cm31_to_num_vec(prepare_hints.oods_shifted_a),
+        "oods_shifted_b": cm31_to_num_vec(prepare_hints.oods_shifted_b),
     });
 
     for (k, v) in text2.as_object().unwrap() {

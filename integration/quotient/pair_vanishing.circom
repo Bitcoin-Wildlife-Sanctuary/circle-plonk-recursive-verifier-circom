@@ -1,4 +1,4 @@
-pragma circom 2.0.0
+pragma circom 2.0.0;
 
 include "../../primitives/circle/fields.circom";
 
@@ -26,7 +26,7 @@ template pair_vanishing_inverse() {
 
     component res_for_conjugated_z = cm31_add();
     res_for_conjugated_z.a <== b_plus_z_x.out;
-    res_for_conjugated.z.b <== a_times_z_y.out;
+    res_for_conjugated_z.b <== a_times_z_y.out;
 
     component inv_for_z = cm31_inv();
     inv_for_z.a <== res_for_z.out;
