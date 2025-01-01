@@ -11,6 +11,36 @@ template m31_inv() {
     out <== inv;
 }
 
+template m31_select() {
+    signal input x0;
+    signal input x1;
+
+    signal input bit;
+
+    signal output out;
+
+    signal t1 <== bit * (x1 - x0);
+    out <== t1 + x0;
+}
+
+template m31_swap() {
+    signal input x0;
+    signal input x1;
+
+    signal input bit;
+
+    signal output out0;
+    signal output out1;
+
+    component select_x0 = m31_select();
+    select_x0.x0 <== x0;
+    select_x0.x1 <== x1;
+    select_x0.bit <== bit;
+
+    out0 <== select_x0.out;
+    out1 <== x0 + x1 - out0;
+}
+
 template cm31_add() {
     signal input a[2];
     signal input b[2];
@@ -96,6 +126,51 @@ template cm31_shift_by_i() {
 
     out[0] <== -a[1];
     out[1] <== a[0];
+}
+
+template cm31_select() {
+    signal input x0[2];
+    signal input x1[2];
+
+    signal input bit;
+
+    signal output out[2];
+
+    component select_real = m31_select();
+    select_real.x0 <== x0[0];
+    select_real.x1 <== x1[0];
+    select_real.bit <== bit;
+    out[0] <== select_real.out;
+
+    component select_imag = m31_select();
+    select_imag.x0 <== x0[1];
+    select_imag.x1 <== x1[1];
+    select_imag.bit <== bit;
+    out[1] <== select_imag.out;
+}
+
+template cm31_swap() {
+    signal input x0[2];
+    signal input x1[2];
+
+    signal input bit;
+
+    signal output out0[2];
+    signal output out1[2];
+
+    component swap_real = m31_swap();
+    swap_real.x0 <== x0[0];
+    swap_real.x1 <== x1[0];
+    swap_real.bit <== bit;
+    out0[0] <== swap_real.out0;
+    out1[0] <== swap_real.out1;
+
+    component swap_imag = m31_swap();
+    swap_imag.x0 <== x0[1];
+    swap_imag.x1 <== x1[1];
+    swap_imag.bit <== bit;
+    out0[1] <== swap_imag.out0;
+    out1[1] <== swap_imag.out1;
 }
 
 template qm31_add() {
@@ -307,4 +382,75 @@ template qm31_neg() {
     out[1] <== -a[1];
     out[2] <== -a[2];
     out[3] <== -a[3];
+}
+
+template qm31_select() {
+    signal input x0[4];
+    signal input x1[4];
+
+    signal input bit;
+
+    signal output out[4];
+
+    component select_first = cm31_select();
+    select_first.x0[0] <== x0[0];
+    select_first.x0[1] <== x0[1];
+    select_first.x1[0] <== x1[0];
+    select_first.x1[1] <== x1[1];
+    select_first.bit <== bit;
+    out[0] <== select_first.out[0];
+    out[1] <== select_first.out[1];
+
+    component select_second = cm31_select();
+    select_second.x0[0] <== x0[2];
+    select_second.x0[1] <== x0[3];
+    select_second.x1[0] <== x1[2];
+    select_second.x1[1] <== x1[3];
+    select_second.bit <== bit;
+    out[2] <== select_second.out[0];
+    out[3] <== select_second.out[1];
+}
+
+template qm31_swap() {
+    signal input x0[4];
+    signal input x1[4];
+
+    signal input bit;
+
+    signal output out0[4];
+    signal output out1[4];
+
+    component swap_first = cm31_swap();
+    swap_first.x0[0] <== x0[0];
+    swap_first.x0[1] <== x0[1];
+    swap_first.x1[0] <== x1[0];
+    swap_first.x1[1] <== x1[1];
+    swap_first.bit <== bit;
+    out0[0] <== swap_first.out0[0];
+    out0[1] <== swap_first.out0[1];
+    out1[0] <== swap_first.out1[0];
+    out1[1] <== swap_first.out1[1];
+
+    component swap_second = cm31_swap();
+    swap_second.x0[0] <== x0[2];
+    swap_second.x0[1] <== x0[3];
+    swap_second.x1[0] <== x1[2];
+    swap_second.x1[1] <== x1[3];
+    swap_second.bit <== bit;
+    out0[2] <== swap_second.out0[0];
+    out0[3] <== swap_second.out0[1];
+    out1[2] <== swap_second.out1[0];
+    out1[3] <== swap_second.out1[1];
+}
+
+template qm31_cond_neg() {
+    signal input a[4];
+    signal input bit;
+
+    signal bit_neg <== 1 - 2 * bit;
+
+    signal output out[4];
+    for(var i = 0; i < 4; i++) {
+        out[i] <== a[i] * bit_neg;
+    }
 }

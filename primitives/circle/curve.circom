@@ -115,6 +115,20 @@ template circle_point_m31_only_add() {
     out_y <== x1y2 + y1x2;
 }
 
+template circle_point_m31_only_add_x_only() {
+    signal input x1;
+    signal input y1;
+
+    signal input x2;
+    signal input y2;
+
+    signal x1x2 <== x1 * x2;
+    signal y1y2 <== y1 * y2;
+
+    signal output out_x;
+    out_x <== x1x2 - y1y2;
+}
+
 template circle_point_m31_only_double() {
     signal input x;
     signal input y;
