@@ -1,6 +1,6 @@
+use circle_plonk_circom_hints::{FiatShamirHints, FoldingHints, PrepareHints, QuotientHints};
 use serde_json::json;
 use stwo_prover::core::fields::qm31::QM31;
-use circle_plonk_circom_hints::{FiatShamirHints, FoldingHints, PrepareHints, QuotientHints};
 
 fn main() {
     let fiat_shamir_hints = FiatShamirHints::new();
@@ -14,10 +14,10 @@ fn main() {
     let qm31_vec_to_num_vec = |a: &[QM31]| {
         let mut res = vec![];
         for entry in a {
-            res.push(entry.0. 0 .0);
-            res.push(entry.0. 1 .0);
-            res.push(entry.1. 0 .0);
-            res.push(entry.1. 1 .0);
+            res.push(entry.0 .0 .0);
+            res.push(entry.0 .1 .0);
+            res.push(entry.1 .0 .0);
+            res.push(entry.1 .1 .0);
         }
         res
     };

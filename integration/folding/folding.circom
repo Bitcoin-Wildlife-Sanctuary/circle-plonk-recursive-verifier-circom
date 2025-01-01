@@ -155,7 +155,6 @@ template test_fold(N, L) {
 }
 
 component main { public [
-    query_parent,
-    l, r, y, fri_fold_random_coeff,
+    query_parent, l, r, y, fri_fold_random_coeff,
     f_prime, last_layer, siblings, fri_alphas
 ] } = test_fold(13, 5);

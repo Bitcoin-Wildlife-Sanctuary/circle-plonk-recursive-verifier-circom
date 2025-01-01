@@ -1,14 +1,14 @@
+use crate::{FiatShamirHints, QuotientHints};
+use itertools::Itertools;
 use std::collections::{BTreeMap, HashMap};
 use std::io::Cursor;
-use itertools::Itertools;
 use stwo_prover::core::circle::M31_CIRCLE_GEN;
-use stwo_prover::core::fields::FieldExpOps;
 use stwo_prover::core::fields::m31::M31;
 use stwo_prover::core::fields::qm31::QM31;
+use stwo_prover::core::fields::FieldExpOps;
 use stwo_prover::core::prover::StarkProof;
 use stwo_prover::core::utils::bit_reverse_index;
 use stwo_prover::core::vcs::poseidon31_merkle::Poseidon31MerkleHasher;
-use crate::{FiatShamirHints, QuotientHints};
 
 #[derive(Debug)]
 pub struct PerQueryFoldingHints {
@@ -65,7 +65,9 @@ impl FoldingHints {
 
         let mut log_size = 18;
         for i in 0..13 {
-            let mut iter = proof.commitment_scheme_proof.fri_proof.inner_layers[i].evals_subset.iter();
+            let mut iter = proof.commitment_scheme_proof.fri_proof.inner_layers[i]
+                .evals_subset
+                .iter();
 
             let mut queries_parent_sorted = queries_and_results.keys().copied().collect_vec();
             queries_parent_sorted.dedup();
@@ -86,9 +88,12 @@ impl FoldingHints {
                 let f_neg_p = *queries_and_results.get(&(queries_parent ^ 1u32)).unwrap();
 
                 let itwid = M31_CIRCLE_GEN.repeated_double(31 - log_size - 2)
-                    + M31_CIRCLE_GEN.repeated_double(31 - log_size).mul(
-                    bit_reverse_index((queries_parent & 0xfffffffeu32) as usize, log_size) as u128
-                );
+                    + M31_CIRCLE_GEN
+                        .repeated_double(31 - log_size)
+                        .mul(
+                            bit_reverse_index((queries_parent & 0xfffffffeu32) as usize, log_size)
+                                as u128,
+                        );
 
                 let (mut f0_px, mut f1_px) = if queries_parent % 2 == 0 {
                     (f_p, f_neg_p)
@@ -132,26 +137,27 @@ impl FoldingHints {
                 siblings.push(*sibling);
 
                 let itwid = M31_CIRCLE_GEN.repeated_double(31 - log_size - 2)
-                    + M31_CIRCLE_GEN.repeated_double(31 - log_size).mul(
-                    bit_reverse_index((cur & 0xfffffffeu32) as usize, log_size) as u128
-                );
+                    + M31_CIRCLE_GEN
+                        .repeated_double(31 - log_size)
+                        .mul(bit_reverse_index((cur & 0xfffffffeu32) as usize, log_size) as u128);
                 twiddles.push(itwid.x.inverse());
                 log_size -= 1;
                 cur >>= 1;
             }
 
-            hints.insert(queries_parent, PerQueryFoldingHints {
+            hints.insert(
                 queries_parent,
-                f_prime: *all_maps[0].get(&queries_parent).unwrap(),
-                quotient_left,
-                quotient_right,
-                siblings,
-                twiddles,
-            });
+                PerQueryFoldingHints {
+                    queries_parent,
+                    f_prime: *all_maps[0].get(&queries_parent).unwrap(),
+                    quotient_left,
+                    quotient_right,
+                    siblings,
+                    twiddles,
+                },
+            );
         }
 
-        FoldingHints {
-            map: hints,
-        }
+        FoldingHints { map: hints }
     }
 }
