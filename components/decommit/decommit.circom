@@ -2,14 +2,14 @@ pragma circom 2.0.0;
 
 include "../../primitives/merkle/merkle.circom";
 
-template decommit(D) {
-    signal input queries_parent;
+template merkle_decommit(D) {
+    signal input query;
     signal input parent_hash[8];
     signal input siblings[D * 8];
     signal input root[8];
 
     component merkle = verify_merkle_path(D);
-    merkle.idx <== queries_parent;
+    merkle.idx <== query;
     merkle.leaf_hash <== parent_hash;
     merkle.siblings <== siblings;
     merkle.root <== root;
@@ -39,71 +39,69 @@ template compute_parent_hash_no_more_than_8(N) {
     }
 }
 
-template test_decommit() {
-    signal input queries_parent;
-    signal input trace_siblings[18 * 8];
+template decommit(N, L) {
+    signal input query;
+    signal input trace_siblings[(N + L) * 8];
     signal input trace_root[8];
 
-    signal input trace_left[3];
-    signal input trace_right[3];
+    signal input trace_l[3];
+    signal input trace_r[3];
 
     component trace_hash = compute_parent_hash_no_more_than_8(3);
-    trace_hash.left <== trace_left;
-    trace_hash.right <== trace_right;
+    trace_hash.left <== trace_l;
+    trace_hash.right <== trace_r;
 
-    signal input interaction_left[8];
-    signal input interaction_right[8];
+    signal input interaction_l[8];
+    signal input interaction_r[8];
 
     component interaction_hash = compute_parent_hash_no_more_than_8(8);
-    interaction_hash.left <== interaction_left;
-    interaction_hash.right <== interaction_right;
+    interaction_hash.left <== interaction_l;
+    interaction_hash.right <== interaction_r;
 
-    signal input constant_left[5];
-    signal input constant_right[5];
+    signal input constant_l[5];
+    signal input constant_r[5];
 
     component constant_hash = compute_parent_hash_no_more_than_8(5);
-    constant_hash.left <== constant_left;
-    constant_hash.right <== constant_right;
+    constant_hash.left <== constant_l;
+    constant_hash.right <== constant_r;
 
-    signal input composition_left[4];
-    signal input composition_right[4];
+    signal input composition_l[4];
+    signal input composition_r[4];
 
     component composition_hash = compute_parent_hash_no_more_than_8(4);
-    composition_hash.left <== composition_left;
-    composition_hash.right <== composition_right;
+    composition_hash.left <== composition_l;
+    composition_hash.right <== composition_r;
 
-    component trace = decommit(18);
-    trace.queries_parent <== queries_parent;
+    component trace = merkle_decommit(N + L);
+    trace.query <== query;
     trace.parent_hash <== trace_hash.parent_hash;
     trace.siblings <== trace_siblings;
     trace.root <== trace_root;
 
-    signal input interaction_siblings[18 * 8];
+    signal input interaction_siblings[(N + L) * 8];
     signal input interaction_root[8];
 
-    component interaction = decommit(18);
-    interaction.queries_parent <== queries_parent;
+    component interaction = merkle_decommit(N + L);
+    interaction.query <== query;
     interaction.parent_hash <== interaction_hash.parent_hash;
     interaction.siblings <== interaction_siblings;
     interaction.root <== interaction_root;
 
-    signal input constant_siblings[18 * 8];
+    signal input constant_siblings[(N + L) * 8];
     signal input constant_root[8];
 
-    component constant = decommit(18);
-    constant.queries_parent <== queries_parent;
+    component constant = merkle_decommit(N + L);
+    constant.query <== query;
     constant.parent_hash <== constant_hash.parent_hash;
     constant.siblings <== constant_siblings;
     constant.root <== constant_root;
 
-    signal input composition_siblings[18 * 8];
+    signal input composition_siblings[(N + L) * 8];
     signal input composition_root[8];
 
-    component composition = decommit(18);
-    composition.queries_parent <== queries_parent;
+    component composition = merkle_decommit(N + L);
+    composition.query <== query;
     composition.parent_hash <== composition_hash.parent_hash;
     composition.siblings <== composition_siblings;
     composition.root <== composition_root;
 }
-
-component main = test_decommit();

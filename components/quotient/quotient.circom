@@ -6,19 +6,18 @@ include "../../primitives/bits/bits.circom";
 include "../../primitives/circle/curve.circom";
 include "../../primitives/circle/fields.circom";
 
-template compute_quotient_for_individual_query(N) {
+template compute_quotient_for_individual_query(N, L) {
     signal input query;
 
-    component decompose_bits = decompose_into_bits(N);
+    component decompose_bits = decompose_into_bits(N + L + 1);
     decompose_bits.a <== query;
 
-    component start = m31_subgroup_generator(20);
-    component step = m31_subgroup_generator(18);
+    component start = m31_subgroup_generator(N + L + 2);
+    component step = m31_subgroup_generator(N + L);
 
-    component compute_step_for_z = circle_point_m31_only_mul_by_bits(N);
-    compute_step_for_z.bits_le[N - 1] <== 0;
-    for(var i = 1; i < N; i++) {
-        compute_step_for_z.bits_le[N - 1 - i] <== decompose_bits.bits[i];
+    component compute_step_for_z = circle_point_m31_only_mul_by_bits(N + L);
+    for(var i = 1; i < N + L + 1; i++) {
+        compute_step_for_z.bits_le[N + L - i] <== decompose_bits.bits[i];
     }
     compute_step_for_z.x <== step.x;
     compute_step_for_z.y <== step.y;
@@ -28,6 +27,11 @@ template compute_quotient_for_individual_query(N) {
     compute_point_z.y1 <== start.y;
     compute_point_z.x2 <== compute_step_for_z.out_x;
     compute_point_z.y2 <== compute_step_for_z.out_y;
+
+    signal output z_x;
+    signal output z_y;
+    z_x <== compute_point_z.out_x;
+    z_y <== compute_point_z.out_y;
 
     signal input trace_l[3];
     signal input trace_r[3];
@@ -59,7 +63,7 @@ template compute_quotient_for_individual_query(N) {
     signal input alpha[4];
 
     component num_trace = compute_num(3);
-    num_trace.y <== compute_point_z.out_y;
+    num_trace.y <== z_y;
     num_trace.l <== trace_l;
     num_trace.r <== trace_r;
     num_trace.coeffs_a <== coeffs_trace_a;
@@ -67,7 +71,7 @@ template compute_quotient_for_individual_query(N) {
     num_trace.alpha <== alpha;
 
     component num_interaction = compute_num(8);
-    num_interaction.y <== compute_point_z.out_y;
+    num_interaction.y <== z_y;
     num_interaction.l <== interaction_l;
     num_interaction.r <== interaction_r;
     num_interaction.coeffs_a <== coeffs_interaction_a;
@@ -75,7 +79,7 @@ template compute_quotient_for_individual_query(N) {
     num_interaction.alpha <== alpha;
 
     component num_constant = compute_num(5);
-    num_constant.y <== compute_point_z.out_y;
+    num_constant.y <== z_y;
     num_constant.l <== constant_l;
     num_constant.r <== constant_r;
     num_constant.coeffs_a <== coeffs_constant_a;
@@ -83,7 +87,7 @@ template compute_quotient_for_individual_query(N) {
     num_constant.alpha <== alpha;
 
     component num_composition = compute_num(4);
-    num_composition.y <== compute_point_z.out_y;
+    num_composition.y <== z_y;
     num_composition.l <== composition_l;
     num_composition.r <== composition_r;
     num_composition.coeffs_a <== coeffs_composition_a;
@@ -91,7 +95,7 @@ template compute_quotient_for_individual_query(N) {
     num_composition.alpha <== alpha;
 
     component num_interaction_shifted = compute_num(4);
-    num_interaction_shifted.y <== compute_point_z.out_y;
+    num_interaction_shifted.y <== z_y;
     for(var i = 0; i < 4; i++) {
         num_interaction_shifted.l[i] <== interaction_l[i + 4];
         num_interaction_shifted.r[i] <== interaction_r[i + 4];
@@ -222,14 +226,14 @@ template compute_quotient_for_individual_query(N) {
     component denominator_inverses_oods = pair_vanishing_inverse();
     denominator_inverses_oods.a <== oods_a;
     denominator_inverses_oods.b <== oods_b;
-    denominator_inverses_oods.z_x <== compute_point_z.out_x;
-    denominator_inverses_oods.z_y <== compute_point_z.out_y;
+    denominator_inverses_oods.z_x <== z_x;
+    denominator_inverses_oods.z_y <== z_y;
 
     component denominator_inverses_oods_shifted = pair_vanishing_inverse();
     denominator_inverses_oods_shifted.a <== oods_shifted_a;
     denominator_inverses_oods_shifted.b <== oods_shifted_b;
-    denominator_inverses_oods_shifted.z_x <== compute_point_z.out_x;
-    denominator_inverses_oods_shifted.z_y <== compute_point_z.out_y;
+    denominator_inverses_oods_shifted.z_x <== z_x;
+    denominator_inverses_oods_shifted.z_y <== z_y;
 
     component sum_l_m1 = qm31_mul_cm31();
     sum_l_m1.a <== alpha4_times_oods_part_l_sum;
@@ -261,80 +265,3 @@ template compute_quotient_for_individual_query(N) {
     sum_l <== sum_l_s.out;
     sum_r <== sum_r_s.out;
 }
-
-template test_quotient() {
-    signal input query;
-
-    signal input trace_l[3];
-    signal input trace_r[3];
-
-    signal input interaction_l[8];
-    signal input interaction_r[8];
-
-    signal input constant_l[5];
-    signal input constant_r[5];
-
-    signal input composition_l[4];
-    signal input composition_r[4];
-
-    signal input coeffs_trace_a[6];
-    signal input coeffs_trace_b[6];
-
-    signal input coeffs_interaction_a[16];
-    signal input coeffs_interaction_b[16];
-
-    signal input coeffs_constant_a[10];
-    signal input coeffs_constant_b[10];
-
-    signal input coeffs_composition_a[8];
-    signal input coeffs_composition_b[8];
-
-    signal input coeffs_interaction_shifted_a[8];
-    signal input coeffs_interaction_shifted_b[8];
-
-    signal input alpha[4];
-
-    component query_s = compute_quotient_for_individual_query(19);
-    query_s.query <== query;
-    query_s.alpha <== alpha;
-
-    query_s.trace_l <== trace_l;
-    query_s.trace_r <== trace_r;
-    query_s.coeffs_trace_a <== coeffs_trace_a;
-    query_s.coeffs_trace_b <== coeffs_trace_b;
-
-    query_s.interaction_l <== interaction_l;
-    query_s.interaction_r <== interaction_r;
-    query_s.coeffs_interaction_a <== coeffs_interaction_a;
-    query_s.coeffs_interaction_b <== coeffs_interaction_b;
-
-    query_s.constant_l <== constant_l;
-    query_s.constant_r <== constant_r;
-    query_s.coeffs_constant_a <== coeffs_constant_a;
-    query_s.coeffs_constant_b <== coeffs_constant_b;
-
-    query_s.composition_l <== composition_l;
-    query_s.composition_r <== composition_r;
-    query_s.coeffs_composition_a <== coeffs_composition_a;
-    query_s.coeffs_composition_b <== coeffs_composition_b;
-
-    query_s.coeffs_interaction_shifted_a <== coeffs_interaction_shifted_a;
-    query_s.coeffs_interaction_shifted_b <== coeffs_interaction_shifted_b;
-
-    signal input oods_a[2];
-    signal input oods_b[2];
-    signal input oods_shifted_a[2];
-    signal input oods_shifted_b[2];
-
-    query_s.oods_a <== oods_a;
-    query_s.oods_b <== oods_b;
-    query_s.oods_shifted_a <== oods_shifted_a;
-    query_s.oods_shifted_b <== oods_shifted_b;
-
-    signal input sum_l[4];
-    signal input sum_r[4];
-    sum_l === query_s.sum_l;
-    sum_r === query_s.sum_r;
-}
-
-component main = test_quotient();

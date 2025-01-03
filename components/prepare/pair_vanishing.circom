@@ -56,12 +56,12 @@ template prepare_pair_vanishing() {
     oods_pair_vanishing_a <== prepare_pair_vanishing_oods.a;
     oods_pair_vanishing_b <== prepare_pair_vanishing_oods.b;
 
-    component shift_minus_1 = circle_point_minus_1(13);
-    component oods_shifted_c = circle_point_add_m31();
+    component shift_1 = m31_subgroup_generator(13);
+    component oods_shifted_c = circle_point_sub_m31();
     oods_shifted_c.x1 <== oods_x;
     oods_shifted_c.y1 <== oods_y;
-    oods_shifted_c.x2 <== shift_minus_1.x;
-    oods_shifted_c.y2 <== shift_minus_1.y;
+    oods_shifted_c.x2 <== shift_1.x;
+    oods_shifted_c.y2 <== shift_1.y;
 
     signal output oods_shifted_x[4] <== oods_shifted_c.out_x;
     signal output oods_shifted_y[4] <== oods_shifted_c.out_y;

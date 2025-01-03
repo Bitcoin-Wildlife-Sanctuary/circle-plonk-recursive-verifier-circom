@@ -9,7 +9,7 @@ fn main() {
     let prepare_hints = PrepareHints::new(&fiat_shamir_hints);
     let quotient_hints = QuotientHints::new(&fiat_shamir_hints, &prepare_hints);
 
-    let query = fiat_shamir_hints.queries[0];
+    let query = fiat_shamir_hints.queries[1];
     let query_parent = query >> 1;
 
     let query_z = query_parent << 1;
@@ -87,7 +87,7 @@ fn main() {
         res
     };
 
-    let mut text1 = json!({
+    let text = json!({
         "query": query,
         "alpha": qm31_to_num_vec(fiat_shamir_hints.line_batch_random_coeff),
         "trace_l": m31_vec_to_num_vec(&trace_l),
@@ -102,9 +102,6 @@ fn main() {
         "coeffs_trace_b": cm31_vec_to_num_vec(&coeffs_trace_b),
         "coeffs_interaction_a": cm31_vec_to_num_vec(&coeffs_interaction_a),
         "coeffs_interaction_b": cm31_vec_to_num_vec(&coeffs_interaction_b),
-    });
-
-    let text2 = json!( {
         "coeffs_constant_a": cm31_vec_to_num_vec(&coeffs_constant_a),
         "coeffs_constant_b": cm31_vec_to_num_vec(&coeffs_constant_b),
         "coeffs_composition_a": cm31_vec_to_num_vec(&coeffs_composition_a),
@@ -119,9 +116,5 @@ fn main() {
         "oods_shifted_b": cm31_to_num_vec(prepare_hints.oods_shifted_b),
     });
 
-    for (k, v) in text2.as_object().unwrap() {
-        text1.as_object_mut().unwrap().insert(k.clone(), v.clone());
-    }
-
-    println!("{}", text1.to_string());
+    println!("{}", text.to_string());
 }

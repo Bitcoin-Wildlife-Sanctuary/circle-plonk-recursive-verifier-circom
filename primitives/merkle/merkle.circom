@@ -31,11 +31,13 @@ template verify_merkle_path(D) {
     signal input siblings[D * 8];
     signal input root[8];
 
-    component bits = decompose_into_bits(D);
+    component bits = decompose_into_bits(D + 1);
     bits.a <== idx;
 
     component rest = verify_merkle_path_with_bits(D);
-    rest.bits <== bits.bits;
+    for(var i = 0; i < D; i++) {
+        rest.bits[i] <== bits.bits[i + 1];
+    }
     rest.leaf_hash <== leaf_hash;
     rest.siblings <== siblings;
     rest.root <== root;

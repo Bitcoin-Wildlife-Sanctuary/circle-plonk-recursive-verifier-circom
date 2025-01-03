@@ -1,4 +1,6 @@
-use circle_plonk_circom_hints::{FiatShamirHints, MerkleProofPerQuery, PrepareHints, QuotientHints};
+use circle_plonk_circom_hints::{
+    FiatShamirHints, MerkleProofPerQuery, PrepareHints, QuotientHints,
+};
 use serde_json::json;
 use stwo_prover::core::fields::m31::M31;
 use stwo_prover::core::vcs::poseidon31_hash::Poseidon31Hash;
@@ -30,15 +32,15 @@ fn main() {
     };
 
     let text = json!({
-        "queries_parent": cur_proof.trace.queries_parent,
-        "trace_left": m31_vec_to_num_vec(&left_quotient.trace),
-        "trace_right": m31_vec_to_num_vec(&right_quotient.trace),
-        "interaction_left": m31_vec_to_num_vec(&left_quotient.interaction),
-        "interaction_right": m31_vec_to_num_vec(&right_quotient.interaction),
-        "constant_left": m31_vec_to_num_vec(&left_quotient.constant),
-        "constant_right": m31_vec_to_num_vec(&right_quotient.constant),
-        "composition_left": m31_vec_to_num_vec(&left_quotient.composition),
-        "composition_right": m31_vec_to_num_vec(&right_quotient.composition),
+        "query": fiat_shamir_hints.queries[0],
+        "trace_l": m31_vec_to_num_vec(&left_quotient.trace),
+        "trace_r": m31_vec_to_num_vec(&right_quotient.trace),
+        "interaction_l": m31_vec_to_num_vec(&left_quotient.interaction),
+        "interaction_r": m31_vec_to_num_vec(&right_quotient.interaction),
+        "constant_l": m31_vec_to_num_vec(&left_quotient.constant),
+        "constant_r": m31_vec_to_num_vec(&right_quotient.constant),
+        "composition_l": m31_vec_to_num_vec(&left_quotient.composition),
+        "composition_r": m31_vec_to_num_vec(&right_quotient.composition),
         "trace_siblings": hash_vec_to_num_vec(&cur_proof.trace.siblings),
         "trace_root": hash_to_num_vec(cur_proof.trace.root),
         "interaction_siblings": hash_vec_to_num_vec(&cur_proof.interaction.siblings),

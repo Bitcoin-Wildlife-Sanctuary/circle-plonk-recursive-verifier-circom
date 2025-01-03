@@ -1,4 +1,5 @@
 use crate::{FiatShamirHints, QuotientHints, StandaloneMerkleProof};
+use indexmap::IndexMap;
 use itertools::Itertools;
 use std::collections::{BTreeMap, HashMap};
 use std::io::Cursor;
@@ -25,7 +26,7 @@ pub struct PerQueryFoldingHints {
 
 #[derive(Debug)]
 pub struct FoldingHints {
-    pub map: HashMap<u32, PerQueryFoldingHints>,
+    pub map: IndexMap<u32, PerQueryFoldingHints>,
 }
 
 impl FoldingHints {
@@ -119,7 +120,6 @@ impl FoldingHints {
             assert_eq!(*res, fiat_shamir_hints.last_layer);
         }
 
-
         let mut cur_fri_queries = Vec::new();
         for queries_parent in queries_parents.iter() {
             cur_fri_queries.push((queries_parent >> 1) as usize);
@@ -138,10 +138,10 @@ impl FoldingHints {
             let mut values = [vec![], vec![], vec![], vec![]];
             for query in queries.iter() {
                 let v = all_maps[i].get(&query).unwrap();
-                values[0].push(v.0.0);
-                values[1].push(v.0.1);
-                values[2].push(v.1.0);
-                values[3].push(v.1.1);
+                values[0].push(v.0 .0);
+                values[1].push(v.0 .1);
+                values[2].push(v.1 .0);
+                values[3].push(v.1 .1);
             }
 
             let proofs = StandaloneMerkleProof::from_stwo_proof(
@@ -170,7 +170,7 @@ impl FoldingHints {
             cur_fri_queries = new_fri_queries;
         }
 
-        let mut hints = HashMap::new();
+        let mut hints = IndexMap::new();
         for &queries_parent in queries_parents.iter() {
             let idx_l = queries_parent << 1;
             let idx_r = (queries_parent << 1) as u32 + 1u32;

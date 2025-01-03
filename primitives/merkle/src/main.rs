@@ -106,7 +106,7 @@ fn main() {
     };
 
     let text = json!({
-        "idx": idx,
+        "idx": (idx << 1) + 1,
         "leaf_hash": hash_to_num_vec(leaf),
         "siblings": hash_vec_to_num_vec(&siblings),
         "root": hash_to_num_vec(root),

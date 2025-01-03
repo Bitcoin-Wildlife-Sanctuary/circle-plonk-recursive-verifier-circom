@@ -1,4 +1,4 @@
-√
+pragma circom 2.0.0;
 
 template compute_constraint_denom(N) {
     signal input x[4];

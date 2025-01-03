@@ -1,4 +1,6 @@
-use circle_plonk_circom_hints::{FiatShamirHints, FoldingHints, PrepareHints, QuotientHints, StandaloneMerkleProof};
+use circle_plonk_circom_hints::{
+    FiatShamirHints, FoldingHints, PrepareHints, QuotientHints, StandaloneMerkleProof,
+};
 use serde_json::json;
 use stwo_prover::core::fields::qm31::QM31;
 use stwo_prover::core::vcs::poseidon31_hash::Poseidon31Hash;
@@ -9,7 +11,10 @@ fn main() {
     let quotient_hints = QuotientHints::new(&fiat_shamir_hints, &prepare_hints);
     let folding_hints = FoldingHints::new(&fiat_shamir_hints, &quotient_hints);
 
-    let (_, first_folding_hint) = folding_hints.map.iter().next().unwrap();
+    let first_folding_hint = folding_hints
+        .map
+        .get(&(fiat_shamir_hints.queries[1] >> 1))
+        .unwrap();
 
     let qm31_to_num_vec = |a: QM31| [a.0 .0 .0, a.0 .1 .0, a.1 .0 .0, a.1 .1 .0];
     let qm31_vec_to_num_vec = |a: &[QM31]| {
@@ -47,7 +52,7 @@ fn main() {
     assert_eq!(sum * 8, siblings_vec.len());
 
     let text = json!( {
-        "query_parent": first_folding_hint.queries_parent,
+        "query": fiat_shamir_hints.queries[1],
         "l": qm31_to_num_vec(first_folding_hint.quotient_left),
         "r": qm31_to_num_vec(first_folding_hint.quotient_right),
         "y": quotient_hints.map.get(&(first_folding_hint.queries_parent << 1)).unwrap().y.0,

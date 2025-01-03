@@ -69,10 +69,10 @@ template fri_fold(N, L) {
     // N is the log of the number of rows
     // L is the negative log of the rate
 
-    signal input query_parent;
+    signal input query;
 
-    component bits = decompose_into_bits(N + L);
-    bits.a <== query_parent;
+    component bits = decompose_into_bits(N + L + 1);
+    bits.a <== query;
 
     signal input siblings[N][4];
     signal input fri_alphas[N][4];
@@ -110,7 +110,7 @@ template fri_fold(N, L) {
         swap[i] = qm31_swap();
         swap[i].x0 <== prev_results[i];
         swap[i].x1 <== siblings[i];
-        swap[i].bit <== bits.bits[i];
+        swap[i].bit <== bits.bits[i + 1];
 
         hash[i] = compute_fri_parent_hash();
         hash[i].left <== swap[i].out0;
@@ -126,7 +126,7 @@ template fri_fold(N, L) {
             siblings_idx += 1;
         }
         for(var j = 0; j < N + L - 1 - i; j++) {
-            merkle[i].bits[j] <== bits.bits[1 + i + j];
+            merkle[i].bits[j] <== bits.bits[2 + i + j];
         }
 
         sub[i] = qm31_sub();
@@ -141,7 +141,7 @@ template fri_fold(N, L) {
         scalar_mul[i].x <== step[i].x;
         scalar_mul[i].y <== step[i].y;
         for(var j = 0; j < ll; j++) {
-            scalar_mul[i].bits_le[j] <== bits.bits[N + L - 1 - j];
+            scalar_mul[i].bits_le[j] <== bits.bits[1 + N + L - 1 - j];
         }
 
         point_add[i] = circle_point_m31_only_add_x_only();
@@ -171,21 +171,21 @@ template fri_fold(N, L) {
     last_layer === prev_results[N];
 }
 
-template test_fold(N, L) {
+template full_fold(N, L) {
     signal input l[4];
     signal input r[4];
     signal input y;
     signal input fri_fold_random_coeff[4];
-    signal input f_prime[4];
+    signal output f_prime[4];
 
     component init = initial_fold();
     init.l <== l;
     init.r <== r;
     init.y <== y;
     init.fri_fold_random_coeff <== fri_fold_random_coeff;
-    f_prime === init.res;
+    f_prime <== init.res;
 
-    signal input query_parent;
+    signal input query;
     signal input last_layer[4];
     signal input siblings[N * 4];
     signal input fri_alphas[N * 4];
@@ -195,7 +195,7 @@ template test_fold(N, L) {
 
     component fold = fri_fold(N, L);
     fold.f_prime <== init.res;
-    fold.query_parent <== query_parent;
+    fold.query <== query;
     fold.last_layer <== last_layer;
     fold.fri_hashes <== fri_hashes;
     fold.fri_siblings <== fri_siblings;
@@ -212,5 +212,3 @@ template test_fold(N, L) {
         fold.fri_alphas[i][3] <== fri_alphas[i * 4 + 3];
     }
 }
-
-component main = test_fold(13, 5);

@@ -2,3 +2,9 @@
 name = "circle-plonk-circom-integration"
 version = "0.1.0"
 edition = "2021"
+
+[dependencies]
+circle-plonk-circom-hints.workspace = true
+stwo-prover.workspace = true
+serde_json.workspace = true
+serde.workspace = true
