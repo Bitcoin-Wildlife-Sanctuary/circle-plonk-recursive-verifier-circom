@@ -11,3 +11,4 @@ serde.workspace = true
 bincode.workspace = true
 num-traits.workspace = true
 itertools.workspace = true
+poseidon2-m31.workspace = true

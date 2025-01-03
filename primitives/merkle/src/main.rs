@@ -62,7 +62,7 @@ fn main() {
         cur >>= 1;
     }
 
-    // integration test
+    // components test
     let mut cur_idx = idx;
     let mut cur_elem = leaf;
     for &sibling in siblings.iter() {

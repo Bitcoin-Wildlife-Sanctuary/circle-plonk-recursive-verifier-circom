@@ -337,17 +337,4 @@ template test_quotient() {
     sum_r === query_s.sum_r;
 }
 
-component main { public [
-    query, alpha,
-    trace_l, trace_r,
-    coeffs_trace_a, coeffs_trace_b,
-    interaction_l, interaction_r,
-    coeffs_interaction_a, coeffs_interaction_b,
-    constant_l, constant_r,
-    coeffs_constant_a, coeffs_constant_b,
-    composition_l, composition_r,
-    coeffs_composition_a, coeffs_composition_b,
-    coeffs_interaction_shifted_a, coeffs_interaction_shifted_b,
-    sum_l, sum_r,
-    oods_a, oods_b, oods_shifted_a, oods_shifted_b
-] } = test_quotient();
+component main = test_quotient();

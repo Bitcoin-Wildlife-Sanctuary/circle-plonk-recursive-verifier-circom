@@ -1,5 +1,5 @@
 [package]
-name = "circle-plonk-circom-merkle"
+name = "circle-plonk-circom-decommit"
 version = "0.1.0"
 edition = "2021"
 
@@ -9,3 +9,4 @@ serde_json.workspace = true
 rand.workspace = true
 rand_chacha.workspace = true
 poseidon2-m31.workspace = true
+circle-plonk-circom-hints.workspace = true

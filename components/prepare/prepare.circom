@@ -187,27 +187,4 @@ template test_prepare() {
     }
 }
 
-component main { public [
-    a_val, b_val, c_val, op, random_coeff, a_wire, b_wire,
-    alpha, z, a_b_logup_0, a_b_logup_1, a_b_logup_2, a_b_logup_3,
-    c_wire, c_logup_0, c_logup_1, c_logup_2, c_logup_3, c_logup_next_0,
-    c_logup_next_1, c_logup_next_2, c_logup_next_3, claimed_sum, mult,
-    constraint_num, oods_point_x, oods_point_y, constraint_denom,
-    oods_a, oods_b, oods_shifted_a, oods_shifted_b,
-    trace_column_line_coeffs_a, trace_column_line_coeffs_b,
-    interaction_column_line_coeffs_a, interaction_column_line_coeffs_b,
-    interaction_shifted_column_line_coeffs_a, interaction_shifted_column_line_coeffs_b,
-    constant_column_line_coeffs_a, constant_column_line_coeffs_b,
-    composition_column_line_coeffs_a, composition_column_line_coeffs_b,
-    sampled_value_trace_a_val, sampled_value_trace_b_val, sampled_value_trace_c_val,
-    sampled_value_interaction_ab_0, sampled_value_interaction_ab_1,
-    sampled_value_interaction_ab_2, sampled_value_interaction_ab_3,
-    sampled_value_interaction_sum_0, sampled_value_interaction_sum_1,
-    sampled_value_interaction_sum_2, sampled_value_interaction_sum_3,
-    sampled_value_interaction_shifted_sum_0, sampled_value_interaction_shifted_sum_1,
-    sampled_value_interaction_shifted_sum_2, sampled_value_interaction_shifted_sum_3,
-    sampled_value_constant_mult, sampled_value_constant_a_wire,
-    sampled_value_constant_b_wire, sampled_value_constant_c_wire,
-    sampled_value_constant_op, sampled_value_composition_0, sampled_value_composition_1,
-    sampled_value_composition_2, sampled_value_composition_3
-] } = test_prepare();
+component main = test_prepare();

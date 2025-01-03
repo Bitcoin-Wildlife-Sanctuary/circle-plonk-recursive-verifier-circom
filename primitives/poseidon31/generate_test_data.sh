@@ -14,7 +14,7 @@ circle-plonk verify --proof proof.tmp --map test.map --input input.json --vk vk.
 rm -r test_cpp
 rm test.r1cs
 rm output.wtns
-mv proof.tmp ../../integration/test_data/proof.dat
-mv vk.tmp ../../integration/test_data/vk.dat
-mv input.json ../../integration/test_data/input.json
-mv test.map ../../integration/test_data/map.dat
+mv proof.tmp ../../components/test_data/proof.dat
+mv vk.tmp ../../components/test_data/vk.dat
+mv input.json ../../components/test_data/input.json
+mv test.map ../../components/test_data/map.dat

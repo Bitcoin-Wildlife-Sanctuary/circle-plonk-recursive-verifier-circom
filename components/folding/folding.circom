@@ -3,6 +3,8 @@ pragma circom 2.0.0;
 include "../../primitives/bits/bits.circom";
 include "../../primitives/circle/curve.circom";
 include "../../primitives/circle/fields.circom";
+include "../../primitives/poseidon31/poseidon31_permute.circom";
+include "../../primitives/merkle/merkle.circom";
 
 template initial_fold() {
     signal input l[4];
@@ -37,6 +39,32 @@ template initial_fold() {
     res <== f_prime.out;
 }
 
+template compute_fri_parent_hash() {
+    signal input left[4];
+    signal input right[4];
+
+    // ideally, this should be improved, so that every layer it handles 4 elements,
+    // but it requires some special way to implement it
+
+    component permute = poseidon31_permute();
+    for(var i = 0; i < 4; i++) {
+        permute.in[i] <== left[i];
+        permute.in[8 + i] <== right[i];
+    }
+    for(var i = 0; i < 4; i++) {
+        permute.in[4 + i] <== 0;
+        permute.in[12 + i] <== 0;
+    }
+
+    signal output out[8];
+    for(var i = 0; i < 4; i++) {
+        out[i] <== permute.out[i] + left[i];
+    }
+    for(var i = 0; i < 4; i++) {
+        out[4 + i] <== permute.out[4 + i];
+    }
+}
+
 template fri_fold(N, L) {
     // N is the log of the number of rows
     // L is the negative log of the rate
@@ -55,9 +83,14 @@ template fri_fold(N, L) {
     signal prev_results[N + 1][4];
     prev_results[0] <== f_prime;
 
+    signal input fri_hashes[N * 8];
+    signal input fri_siblings[(L + L + N - 1) * N * 4];
+
     component add[N];
+    component swap[N];
     component sub[N];
-    component cond_neg[N];
+    component hash[N];
+    component merkle[N];
     component start[N];
     component step[N];
     component scalar_mul[N];
@@ -66,18 +99,39 @@ template fri_fold(N, L) {
     component f1[N];
     component f1_times_alpha[N];
     component calc_f_prime[N];
+
+    var siblings_idx = 0;
+
     for(var i = 0; i < N; i++) {
         add[i] = qm31_add();
         add[i].a <== prev_results[i];
         add[i].b <== siblings[i];
 
-        sub[i] = qm31_sub();
-        sub[i].a <== prev_results[i];
-        sub[i].b <== siblings[i];
+        swap[i] = qm31_swap();
+        swap[i].x0 <== prev_results[i];
+        swap[i].x1 <== siblings[i];
+        swap[i].bit <== bits.bits[i];
 
-        cond_neg[i] = qm31_cond_neg();
-        cond_neg[i].a <== sub[i].out;
-        cond_neg[i].bit <== bits.bits[i];
+        hash[i] = compute_fri_parent_hash();
+        hash[i].left <== swap[i].out0;
+        hash[i].right <== swap[i].out1;
+
+        merkle[i] = verify_merkle_path_with_bits(N + L - 1 - i);
+        merkle[i].leaf_hash <== hash[i].out;
+        for(var j = 0; j < 8; j++) {
+            merkle[i].root[j] <== fri_hashes[i * 8 + j];
+        }
+        for(var j = 0; j < (N + L - 1 - i) * 8; j++) {
+            merkle[i].siblings[j] <== fri_siblings[siblings_idx];
+            siblings_idx += 1;
+        }
+        for(var j = 0; j < N + L - 1 - i; j++) {
+            merkle[i].bits[j] <== bits.bits[1 + i + j];
+        }
+
+        sub[i] = qm31_sub();
+        sub[i].a <== swap[i].out0;
+        sub[i].b <== swap[i].out1;
 
         start[i] = m31_subgroup_generator(N + L + 2 - i);
         step[i] = m31_subgroup_generator(N + L - i);
@@ -100,7 +154,7 @@ template fri_fold(N, L) {
         inv[i].in <== point_add[i].out_x;
 
         f1[i] = qm31_mul_m31();
-        f1[i].a <== cond_neg[i].out;
+        f1[i].a <== sub[i].out;
         f1[i].b <== inv[i].out;
 
         f1_times_alpha[i] = qm31_mul();
@@ -136,10 +190,15 @@ template test_fold(N, L) {
     signal input siblings[N * 4];
     signal input fri_alphas[N * 4];
 
+    signal input fri_hashes[N * 8];
+    signal input fri_siblings[(L + L + N - 1) * N * 4];
+
     component fold = fri_fold(N, L);
     fold.f_prime <== init.res;
     fold.query_parent <== query_parent;
     fold.last_layer <== last_layer;
+    fold.fri_hashes <== fri_hashes;
+    fold.fri_siblings <== fri_siblings;
     for(var i = 0; i < N; i++) {
         fold.siblings[i][0] <== siblings[i * 4];
         fold.siblings[i][1] <== siblings[i * 4 + 1];
@@ -154,7 +213,4 @@ template test_fold(N, L) {
     }
 }
 
-component main { public [
-    query_parent, l, r, y, fri_fold_random_coeff,
-    f_prime, last_layer, siblings, fri_alphas
-] } = test_fold(13, 5);
+component main = test_fold(13, 5);

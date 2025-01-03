@@ -9,3 +9,6 @@ pub use folding::*;
 
 pub mod quotient;
 pub use quotient::*;
+
+pub mod decommit;
+pub use decommit::*;

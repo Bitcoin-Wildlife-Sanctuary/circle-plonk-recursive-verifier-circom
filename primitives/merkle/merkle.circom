@@ -34,6 +34,20 @@ template verify_merkle_path(D) {
     component bits = decompose_into_bits(D);
     bits.a <== idx;
 
+    component rest = verify_merkle_path_with_bits(D);
+    rest.bits <== bits.bits;
+    rest.leaf_hash <== leaf_hash;
+    rest.siblings <== siblings;
+    rest.root <== root;
+}
+
+template verify_merkle_path_with_bits(D) {
+    signal input bits[D];
+    signal input leaf_hash[8];
+
+    signal input siblings[D * 8];
+    signal input root[8];
+
     signal prev_elem[D + 1][8];
     prev_elem[0] <== leaf_hash;
 
@@ -46,7 +60,7 @@ template verify_merkle_path(D) {
         for(var j = 0; j < 8; j++) {
             swaps[i].b[j] <== siblings[i * 8 + j];
         }
-        swaps[i].bit <== bits.bits[i];
+        swaps[i].bit <== bits[i];
 
         permute[i] = poseidon31_permute();
         for(var j = 0; j < 8; j++) {

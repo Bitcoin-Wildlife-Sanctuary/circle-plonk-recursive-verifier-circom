@@ -16,4 +16,4 @@ template test_merkle() {
     verify.root <== root;
 }
 
-component main { public [idx, leaf_hash, siblings, root] } = test_merkle();
+component main = test_merkle();

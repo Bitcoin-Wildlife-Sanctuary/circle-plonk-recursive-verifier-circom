@@ -24,4 +24,4 @@ template test_check_num_bits() {
     low_check.out === out_low;
 }
 
-component main { public [a22, a23, a15, in_a, out_low] } = test_check_num_bits();
+component main = test_check_num_bits();

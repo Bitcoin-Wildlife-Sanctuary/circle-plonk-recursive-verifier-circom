@@ -15,4 +15,4 @@ template test_poseidon31_permute() {
     s2.out === out;
 }
 
-component main { public [in, out] } = test_poseidon31_permute();
+component main = test_poseidon31_permute();

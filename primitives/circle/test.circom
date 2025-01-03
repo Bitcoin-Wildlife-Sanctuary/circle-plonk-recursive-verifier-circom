@@ -75,7 +75,4 @@ template test_fields() {
     random_point_y === mul_by_bits.out_y;
 }
 
-component main { public [
-    a, b, a_plus_b, a_minus_b, a_times_b, a_inv, a_square,
-    t, x, y, shifted_x, shifted_y, bits, random_point_x, random_point_y
-] } = test_fields();
+component main = test_fields();

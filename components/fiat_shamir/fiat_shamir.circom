@@ -343,27 +343,4 @@ template fiat_shamir() {
     }
 }
 
-component main { public [
-        trace_commitment, alpha, z, interaction_commitment, constant_commitment,
-        random_coeff, composition_commitment, oods_point_x, oods_point_y,
-        sampled_value_trace_a_val, sampled_value_trace_b_val, sampled_value_trace_c_val,
-        sampled_value_interaction_ab_0, sampled_value_interaction_ab_1,
-        sampled_value_interaction_ab_2, sampled_value_interaction_ab_3,
-        sampled_value_interaction_sum_0, sampled_value_interaction_sum_1,
-        sampled_value_interaction_sum_2, sampled_value_interaction_sum_3,
-        sampled_value_interaction_shifted_sum_0, sampled_value_interaction_shifted_sum_1,
-        sampled_value_interaction_shifted_sum_2, sampled_value_interaction_shifted_sum_3,
-        sampled_value_constant_mult, sampled_value_constant_a_wire,
-        sampled_value_constant_b_wire, sampled_value_constant_c_wire,
-        sampled_value_constant_op, sampled_value_composition_0, sampled_value_composition_1,
-        sampled_value_composition_2, sampled_value_composition_3, line_batch_random_coeff,
-        fri_fold_random_coeff, fri_layer_commitment0, fri_layer_commitment1,
-        fri_layer_commitment2, fri_layer_commitment3, fri_layer_commitment4,
-        fri_layer_commitment5, fri_layer_commitment6, fri_layer_commitment7,
-        fri_layer_commitment8, fri_layer_commitment9, fri_layer_commitment10,
-        fri_layer_commitment11, fri_layer_commitment12, fri_alpha0, fri_alpha1, fri_alpha2,
-        fri_alpha3, fri_alpha4, fri_alpha5, fri_alpha6, fri_alpha7, fri_alpha8, fri_alpha9,
-        fri_alpha10, fri_alpha11, fri_alpha12, last_layer,
-        nonce, queries
-    ]
-} = fiat_shamir();
+component main = fiat_shamir();

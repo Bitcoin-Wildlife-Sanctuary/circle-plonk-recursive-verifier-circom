@@ -61,8 +61,4 @@ template test_channel() {
     }
 }
 
-component main { public [
-        iv, root, channel_mix_root, channel_draw_felt1, channel_draw_felt2_a, channel_draw_felt2_b,
-        channel_draw_felt2_c, a, b, c, channel_absorb_1, channel_absorb_2
-    ]
-} = test_channel();
+component main = test_channel();

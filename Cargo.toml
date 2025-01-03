@@ -1,9 +1,10 @@
 [workspace]
 members = [
-    "primitives/poseidon31", "primitives/circle", "primitives/channel", "primitives/bits",
-    "primitives/merkle",
-    "integration/fiat_shamir", "integration/hints", "integration/prepare",
-    "integration/folding", "integration/quotient"
+    "primitives/poseidon31", "primitives/circle", "primitives/channel",
+    "primitives/bits", "primitives/merkle",
+    "components/fiat_shamir", "components/hints", "components/prepare",
+    "components/folding", "components/quotient", "components/decommit",
+    "integration"
 ]
 resolver = "2"
 
@@ -18,7 +19,7 @@ stwo-prover = { git = "https://github.com/Bitcoin-Wildlife-Sanctuary/stwo", bran
 circle-plonk-lib = { git = "https://github.com/Bitcoin-Wildlife-Sanctuary/circle-plonk" }
 bincode = "1.3.3"
 num-traits = "0.2.19"
-circle-plonk-circom-hints = { path = "integration/hints" }
+circle-plonk-circom-hints = { path = "components/hints" }
 itertools = "0.13.0"
 
 [profile.release]

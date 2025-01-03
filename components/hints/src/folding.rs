@@ -1,4 +1,4 @@
-use crate::{FiatShamirHints, QuotientHints};
+use crate::{FiatShamirHints, QuotientHints, StandaloneMerkleProof};
 use itertools::Itertools;
 use std::collections::{BTreeMap, HashMap};
 use std::io::Cursor;
@@ -16,11 +16,11 @@ pub struct PerQueryFoldingHints {
 
     pub quotient_left: QM31,
     pub quotient_right: QM31,
-
     pub f_prime: QM31,
-
     pub siblings: Vec<QM31>,
     pub twiddles: Vec<M31>,
+
+    pub merkle_proofs: Vec<StandaloneMerkleProof>,
 }
 
 #[derive(Debug)]
@@ -119,6 +119,57 @@ impl FoldingHints {
             assert_eq!(*res, fiat_shamir_hints.last_layer);
         }
 
+
+        let mut cur_fri_queries = Vec::new();
+        for queries_parent in queries_parents.iter() {
+            cur_fri_queries.push((queries_parent >> 1) as usize);
+        }
+        let mut all_fri_proofs = vec![];
+        for i in 0..13 {
+            // find out all the queried positions and sort them
+            let mut queries = vec![];
+            for &queries_parent in cur_fri_queries.iter() {
+                queries.push((queries_parent << 1) as u32);
+                queries.push(((queries_parent << 1) + 1usize) as u32);
+            }
+            queries.sort_unstable();
+            queries.dedup();
+
+            let mut values = [vec![], vec![], vec![], vec![]];
+            for query in queries.iter() {
+                let v = all_maps[i].get(&query).unwrap();
+                values[0].push(v.0.0);
+                values[1].push(v.0.1);
+                values[2].push(v.1.0);
+                values[3].push(v.1.1);
+            }
+
+            let proofs = StandaloneMerkleProof::from_stwo_proof(
+                19 - 1 - i,
+                &cur_fri_queries,
+                &values,
+                proof.commitment_scheme_proof.fri_proof.inner_layers[i].commitment,
+                &proof.commitment_scheme_proof.fri_proof.inner_layers[i].decommitment,
+            );
+
+            for proof in proofs.iter() {
+                proof.verify();
+            }
+
+            let mut map = HashMap::new();
+            let mut new_fri_queries = Vec::new();
+            for (&queries_parent, proof) in cur_fri_queries.iter().zip(proofs.iter()) {
+                map.insert(queries_parent, proof.clone());
+                new_fri_queries.push(queries_parent >> 1);
+            }
+            new_fri_queries.sort_unstable();
+            new_fri_queries.dedup();
+
+            all_fri_proofs.push(map);
+
+            cur_fri_queries = new_fri_queries;
+        }
+
         let mut hints = HashMap::new();
         for &queries_parent in queries_parents.iter() {
             let idx_l = queries_parent << 1;
@@ -127,12 +178,16 @@ impl FoldingHints {
             let quotient_left = quotient_hints.map.get(&idx_l).unwrap().sum;
             let quotient_right = quotient_hints.map.get(&idx_r).unwrap().sum;
 
+            let mut intermediates = vec![];
             let mut siblings = vec![];
             let mut twiddles = vec![];
 
             let mut cur = queries_parent;
             let mut log_size = 18;
             for i in 0..13 {
+                let intermediate = all_maps[i].get(&cur).unwrap();
+                intermediates.push(*intermediate);
+
                 let sibling = all_maps[i].get(&(cur ^ 1)).unwrap();
                 siblings.push(*sibling);
 
@@ -145,6 +200,15 @@ impl FoldingHints {
                 cur >>= 1;
             }
 
+            let mut merkle_proofs = vec![];
+            {
+                let mut queries_parent = (queries_parent as usize) >> 1;
+                for j in 0..13 {
+                    merkle_proofs.push(all_fri_proofs[j].get(&queries_parent).unwrap().clone());
+                    queries_parent >>= 1;
+                }
+            }
+
             hints.insert(
                 queries_parent,
                 PerQueryFoldingHints {
@@ -152,6 +216,7 @@ impl FoldingHints {
                     f_prime: *all_maps[0].get(&queries_parent).unwrap(),
                     quotient_left,
                     quotient_right,
+                    merkle_proofs,
                     siblings,
                     twiddles,
                 },
